@@ -1,8 +1,26 @@
+"use client";
+
+import { useState } from "react";
 import { FaGithub, FaPlus } from "react-icons/fa";
 import { FaGitlab } from "react-icons/fa6";
-import UserInformationForm from "./components/UserInformationForm";
+import { Contributions } from "./api/contributions/route";
+import ContributionsContainer from "./components/ContributionsContainer";
+import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
 
 export default function Home() {
+
+  const [contributions, setContributions] = useState<Contributions | null>(null)
+  const [totalContributionsCount, setTotalContributionsCount] = useState<number| null>(0)
+  const [githubUsername, setGithubUsername] = useState<string>('')
+  const [gitlabUsername, setGitlabUsername] = useState<string>('')
+
+  const handleContributionsFetch = (contributionsData: ContributionsResponse, usernameData: UsernameData) => {
+    setContributions(contributionsData.data.contributions)
+    setTotalContributionsCount(contributionsData.data.totalContributionsCount)
+    setGithubUsername(usernameData.githubUsername)
+    setGitlabUsername(usernameData.gitlabUsername)
+  }
+  
   return (
     <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
       <div className="container px-4">
@@ -22,7 +40,11 @@ export default function Home() {
         
         <div className="max-w-3xl mx-auto">
           <div className="bg-neutral-800 rounded-lg shadow-xl border border-neutral-700">
-            <UserInformationForm />
+            {!contributions ? (
+              <UserInformationForm onContributionsFetch={handleContributionsFetch}/>
+            ) : (
+              <ContributionsContainer contributions={contributions} totalContributionsCount={totalContributionsCount} githubUsername={githubUsername} gitlabUsername={gitlabUsername}/>
+            )}
           </div>
         </div>
       </div>
