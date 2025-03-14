@@ -2,6 +2,8 @@
 
 ![screenshot-gitfusion1](https://github.com/user-attachments/assets/6078479b-2cd5-4294-87cb-c0e6a7e30dbf)
 
+### 🚀  Try out Git Fusion: [https://gitfusion.vercel.app](https://gitfusion.vercel.app)
+
 Git Fusion is a tool that seamlessly combines contribution data from GitHub and GitLab into a unified, interactive graph. Whether you're an open-source enthusiast, a professional developer, or managing multiple repositories across platforms, Git Fusion provides a clear, comprehensive view of your coding activity.
 
 > Stay on top of your development journey with Git Fusion—because your work deserves to be seen, no matter where you code.
