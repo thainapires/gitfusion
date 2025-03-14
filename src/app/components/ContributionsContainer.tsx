@@ -72,7 +72,7 @@ export default function ContributionsContainer({contributions, totalContribution
                             <span className="ml-2 text-white font-medium">{githubUsername}</span>
                         </a>
                         <a 
-                            href={`https://github.com/${gitlabUsername}`} 
+                            href={`https://gitlab.com/${gitlabUsername}`} 
                             target="_blank" 
                             className="flex items-center px-4 py-2 bg-zinc-700/50 rounded-lg hover:bg-zinc-700 transition-colors"
                         >
