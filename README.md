@@ -28,6 +28,8 @@ Git Fusion is a tool that seamlessly combines contribution data from GitHub and 
 npm i
 ```
 
+2. Copy the contents of ```.env.local.example``` into a new file called ```.env.local``` and add your github access token and change port of api if needed
+
 2. Usage
 ```sh
 npm run dev
