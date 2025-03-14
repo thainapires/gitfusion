@@ -6,6 +6,7 @@ import { FaGitlab } from "react-icons/fa6";
 import { Contributions } from "./api/contributions/route";
 import ContributionsContainer from "./components/ContributionsContainer";
 import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
+import Footer from "./components/Footer";
 
 export default function Home() {
 
@@ -46,6 +47,7 @@ export default function Home() {
               <ContributionsContainer contributions={contributions} totalContributionsCount={totalContributionsCount} githubUsername={githubUsername} gitlabUsername={gitlabUsername}/>
             )}
           </div>
+          <Footer />        
         </div>
       </div>
     </div>
