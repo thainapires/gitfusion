@@ -36,11 +36,10 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
 
     const fetchContributions = async (data: {github_username: string, gitlab_username: string}) => {
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || ''
             setIsLoading(true)
             setError(null)
 
-            const response = await fetch(`${baseUrl}/api/contributions?github_username=${data.github_username}&gitlab_username=${data.gitlab_username}`);
+            const response = await fetch(`/api/contributions?github_username=${data.github_username}&gitlab_username=${data.gitlab_username}`);
             if(!response.ok){
                 throw new Error('Failed to fetch contributions')
             }
