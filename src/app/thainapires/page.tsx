@@ -30,15 +30,16 @@ export default function ThainaPiresPage() {
     }, [])
 
     return (
-        <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
+        <div className="min-h-screen bg-[#1a202c] flex items-center justify-center">
             <div className="container px-4">
                 <div className="max-w-3xl mx-auto">
-                    <div className="bg-neutral-800 rounded-lg shadow-xl border border-neutral-700">
+                    <div className="bg-[#2d3748] rounded-lg shadow-xl">
                         <ContributionsContainer
                             contributions={contributions ? contributions : []}
                             totalContributionsCount={totalContributionsCount}
                             githubUsername={'thainapires'}
                             gitlabUsername={'thainapires'}
+                            closeButton={false}
                             setContributions={setContributions}
                         />
                     </div>

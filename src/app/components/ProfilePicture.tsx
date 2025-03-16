@@ -13,7 +13,7 @@ export default function ProfilePicture({profilePictureUrl}: ProfilePictureProps)
                 <Image
                     src={profilePictureUrl}
                     alt="profile picture"
-                    className="w-48 rounded-full border-2 border-emerald-500 p-1" 
+                    className="rounded-full border-2 border-emerald-500 p-1" 
                     width={192}
                     height={192}
                 />
@@ -21,7 +21,7 @@ export default function ProfilePicture({profilePictureUrl}: ProfilePictureProps)
                 <Image
                     src="https://avatars.githubusercontent.com/u/100000000000?v=4"
                     alt="default profile picture"
-                    className="w-48 rounded-full border-2 border-emerald-500 p-1"
+                    className="rounded-full border-2 border-emerald-500 p-1"
                     width={192}
                     height={192}
                 />
