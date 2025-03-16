@@ -5,8 +5,8 @@ import { FaGithub, FaPlus } from "react-icons/fa";
 import { FaGitlab } from "react-icons/fa6";
 import { Contributions } from "./api/contributions/route";
 import ContributionsContainer from "./components/ContributionsContainer";
-import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
 import Footer from "./components/Footer";
+import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
 
 export default function Home() {
 
@@ -44,7 +44,12 @@ export default function Home() {
             {!contributions ? (
               <UserInformationForm onContributionsFetch={handleContributionsFetch}/>
             ) : (
-              <ContributionsContainer contributions={contributions} totalContributionsCount={totalContributionsCount} githubUsername={githubUsername} gitlabUsername={gitlabUsername}/>
+              <ContributionsContainer 
+                contributions={contributions} 
+                totalContributionsCount={totalContributionsCount} 
+                githubUsername={githubUsername} 
+                gitlabUsername={gitlabUsername} 
+                setContributions={setContributions}/>
             )}
           </div>
           <Footer />        

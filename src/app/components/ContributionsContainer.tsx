@@ -2,18 +2,20 @@
 
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 import { Contributions } from "../api/contributions/route";
 import ContributionsGraph from "./ContributionsGraph";
 import ProfilePicture from "./ProfilePicture";
-
 interface ContributionsContainerProps {
     contributions: Contributions;
     totalContributionsCount: number | null;
     githubUsername: string
     gitlabUsername: string
+    setContributions: React.Dispatch<React.SetStateAction<Contributions | null>>;
 }
 
-export default function ContributionsContainer({contributions, totalContributionsCount, githubUsername, gitlabUsername}: ContributionsContainerProps) {
+export default function ContributionsContainer({contributions, setContributions, totalContributionsCount, githubUsername, gitlabUsername}: ContributionsContainerProps) {
     const [profilePictureUrl, setProfilePictureUrl] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(true)
 
@@ -31,10 +33,15 @@ export default function ContributionsContainer({contributions, totalContribution
     useEffect(() => {
         getGithubProfilePicture()
     }, [])
-    
+
+    const onClose = () => {
+        setContributions(null)
+    } 
+
     return (
         <div className="relative p-4 sm:p-6">
             <button 
+                onClick={onClose}
                 className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-full"
                 aria-label="Close"
             >
@@ -86,7 +93,11 @@ export default function ContributionsContainer({contributions, totalContribution
 
                 <div className="bg-zinc-700/30 rounded-xl p-4 sm:p-6 backdrop-blur-sm border border-zinc-600/50 w-full">
                     <div className="text-center">
-                        <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{totalContributionsCount}</div>
+                        {totalContributionsCount === 0 ? (
+                            <Skeleton width={80} height={35} baseColor="#333333" highlightColor="#555555"/>
+                        ): (
+                            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{totalContributionsCount}</div>
+                        )}
                         <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">Total Contributions</div>
                     </div>
                 </div>
@@ -94,7 +105,11 @@ export default function ContributionsContainer({contributions, totalContribution
             </div>
 
             <div className="p-2 sm:p-4">
-                <ContributionsGraph contributions={contributions} />
+                {contributions.length ? (
+                    <ContributionsGraph contributions={contributions} />
+                ) : (
+                    <Skeleton className="w-full h-10 md:h-20 lg:h-24" baseColor="#333333" highlightColor="#555555"/>
+                )}
             </div>
         </div>
     )

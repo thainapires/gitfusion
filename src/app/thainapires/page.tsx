@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ContributionsContainer from "../components/ContributionsContainer";
 import { Contributions } from "../api/contributions/route";
-import { FaGithub, FaGitlab, FaPlus } from "react-icons/fa";
+import ContributionsContainer from "../components/ContributionsContainer";
 import Footer from "../components/Footer";
 
 export default function ThainaPiresPage() {
