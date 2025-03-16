@@ -97,7 +97,7 @@ export default function ContributionsContainer({contributions, setContributions,
                 <div className="bg-[#262d3c] rounded-xl p-4 sm:p-6 backdrop-blur-sm w-full">
                     <div className="text-center">
                         {totalContributionsCount === 0 ? (
-                            <Skeleton width={80} height={35} baseColor="#333333" highlightColor="#555555"/>
+                            <Skeleton width={80} height={35} baseColor="#1A202C" highlightColor="#2D3748"/>
                         ): (
                             <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{totalContributionsCount}</div>
                         )}
@@ -111,7 +111,7 @@ export default function ContributionsContainer({contributions, setContributions,
                 {contributions.length ? (
                     <ContributionsGraph contributions={contributions} />
                 ) : (
-                    <Skeleton className="w-full h-10 md:h-20 lg:h-24" baseColor="#333333" highlightColor="#555555"/>
+                    <Skeleton className="w-full h-10 md:h-20 lg:h-24" baseColor="#1A202C" highlightColor="#2D3748"/>
                 )}
             </div>
         </div>
