@@ -6,7 +6,7 @@ import ContributionsContainer from "../components/ContributionsContainer";
 import Footer from "../components/Footer";
 
 export default function ThainaPiresPage() {
-    const [contributions, setContributions] = useState<Contributions>([])
+    const [contributions, setContributions] = useState<Contributions | null>(null)
     const [totalContributionsCount, setTotalContributionsCount] = useState<number | null>(0)
 
     const fetchContributions = async (data: { github_username: string, gitlab_username: string }) => {
@@ -35,10 +35,11 @@ export default function ThainaPiresPage() {
                 <div className="max-w-3xl mx-auto">
                     <div className="bg-neutral-800 rounded-lg shadow-xl border border-neutral-700">
                         <ContributionsContainer
-                            contributions={contributions}
+                            contributions={contributions ? contributions : []}
                             totalContributionsCount={totalContributionsCount}
                             githubUsername={'thainapires'}
                             gitlabUsername={'thainapires'}
+                            setContributions={setContributions}
                         />
                     </div>
                     <Footer />  
