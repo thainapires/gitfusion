@@ -10,7 +10,6 @@ import Footer from "./components/Footer";
 import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
 
 export default function Home() {
-
   const [contributions, setContributions] = useState<Contributions | null>(null)
   const [totalContributionsCount, setTotalContributionsCount] = useState<number| null>(0)
   const [githubUsername, setGithubUsername] = useState<string>('')
@@ -54,7 +53,7 @@ export default function Home() {
                   contributions={contributions} 
                   totalContributionsCount={totalContributionsCount} 
                   githubUsername={githubUsername} 
-                  gitlabUsername={gitlabUsername} 
+                  gitlabUsername={gitlabUsername}
                   setContributions={setContributions}/>
               </motion.div>
             )}
