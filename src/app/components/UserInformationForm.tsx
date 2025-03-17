@@ -40,18 +40,23 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
         try {
             setIsLoading(true)
 
-            const response = await fetch(`/api/contributions?github_username=${data.github_username}&gitlab_username=${data.gitlab_username}`);
+            const response = await fetch(
+                `/api/contributions?github_username=${data.github_username}&gitlab_username=${data.gitlab_username}`
+            )
+
+            const result = await response.json()
+            
             if(!response.ok){
-                throw new Error('Failed to fetch contributions')
+                throw new Error(result.error || "Unknown error occurred while fetching contributions.");
             }
 
-            const contributionsData = await response.json()
-
-            onContributionsFetch(contributionsData, {githubUsername: data.github_username, gitlabUsername: data.gitlab_username})
+            onContributionsFetch(result, {
+                githubUsername: data.github_username,
+                gitlabUsername: data.gitlab_username
+            })
 
         } catch (error) {
-            const errorMessage = "Error fetching contributions: " + (error instanceof Error? error.message : "")
-            toast.error(errorMessage)
+            toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
         } finally {
             setIsLoading(false);
         }
