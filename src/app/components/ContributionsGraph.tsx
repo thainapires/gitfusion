@@ -5,12 +5,20 @@ import 'react-calendar-heatmap/dist/styles.css';
 import { Tooltip } from 'react-tooltip';
 import { Contribution, Contributions } from "../api/contributions/route";
 import ContributionsLegend from './ContributionsLegend';
-
+import { shiftDateForward } from '../utils/index';
 interface ContributionsProps {
     contributions: Contributions
 }
 
 export default function ContributionsGraph({contributions}: ContributionsProps) {
+
+    const shiftedContributions = contributions.map((contribution) => ({
+        ...contribution,
+        date: shiftDateForward(contribution.date),
+    }));
+
+    const startDate = new Date(shiftedContributions[0]?.date);
+    const endDate = new Date(shiftedContributions[shiftedContributions.length - 1]?.date);
 
     const tooltipDataAttrs = (value: any) => {
         if (value && value.date) {
@@ -18,7 +26,7 @@ export default function ContributionsGraph({contributions}: ContributionsProps) 
             const contributionsOnDate = value.count || 0;
             return {
                 'data-tooltip-id': 'contributions-tooltip',
-                'data-tooltip-content': `${contributionsOnDate} contribution${contributionsOnDate !== 1 ? 's' : ''} on ${date.toLocaleDateString('en-US')}`,
+                'data-tooltip-content': `${contributionsOnDate} contribution${contributionsOnDate !== 1 ? 's' : ''} on ${date.toLocaleDateString('pt-BR')}`,
             };
         }
         return {};
@@ -44,9 +52,9 @@ export default function ContributionsGraph({contributions}: ContributionsProps) 
     return (
        <div className="flex w-full flex-col">
             <CalendarHeatmap
-                startDate={new Date('2024-03-14')}
-                endDate={new Date('2025-03-14')}
-                values={contributions}
+                startDate={startDate}
+                endDate={endDate}
+                values={shiftedContributions}
                 showWeekdayLabels
                 showOutOfRangeDays
                 gutterSize={2}
