@@ -48,3 +48,13 @@ body {
 .react-calendar-heatmap .color-scale-5 {
   fill: #18181B; 
 }
+
+/* swagger styles */
+.swagger-ui {
+  background-color: white;
+}
+
+.swagger-ui > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+}

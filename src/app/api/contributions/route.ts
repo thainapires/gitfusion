@@ -8,6 +8,68 @@ export type Contribution = {
 
 export type Contributions = Contribution[]
 
+/**
+ * @swagger
+ * /api/contributions:
+ *   get:
+ *     description: Fetches the contribution data for a GitHub and GitLab user and merges their contributions by date.
+ *     tags:
+ *       - Contributions
+ *     parameters:
+ *       - in: query
+ *         name: github_username
+ *         required: true
+ *         description: GitHub username to fetch contribution data from GitHub.
+ *       - in: query
+ *         name: gitlab_username
+ *         required: true
+ *         description: GitLab username to fetch contribution data from GitLab.
+ *     responses:
+ *       200:
+ *         description: Successfully merged contributions from GitHub and GitLab, returns total contributions count and detailed data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalContributionsCount:
+ *                       type: integer
+ *                       description: Total number of contributions merged from GitHub and GitLab.
+ *                     contributions:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           date:
+ *                             type: string
+ *                             description: The date of the contribution.
+ *                           count:
+ *                             type: integer
+ *                             description: Number of contributions on the given date.
+ *       400:
+ *         description: Bad Request if either GitHub or GitLab username is missing or if the data fetch fails from either service.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message describing the issue.
+ *       500:
+ *         description: Internal Server Error if an unexpected error occurs while fetching contribution data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: General error message indicating an issue with the server or API request.
+ */
 export async function GET(req: Request) {
 
   try{
