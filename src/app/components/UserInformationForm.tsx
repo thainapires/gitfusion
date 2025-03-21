@@ -75,20 +75,20 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
     };
 
     return (
-        <div className="p-6 sm:p-8">
-            <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 p-8">
+        <div className="flex justify-center h-full items-center p-6 sm:p-8">
+            <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 p-8 w-full max-w-xl">
                 <div className="space-y-4">
                     <div>
-                        <label htmlFor="github-username" className="label text-zinc-300 font-bold">GitHub Username</label>
+                        <label htmlFor="github-username" className="label font-bold">GitHub Username</label>
                         <div className="relative mt-2">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaGithub className="h-5 w-5 text-zinc-300" />
+                                <FaGithub className="h-5 w-5 text-gray-600 dark:text-white" />
                             </div>
                             <input 
                                 type="text" 
                                 id="github-username" 
                                 {...register("github_username", { required: "GitHub username is required" })}
-                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-300 bg-[#1a202c] placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                                 placeholder="Enter your github username"
                                 required
                             />
@@ -96,17 +96,17 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                     </div>
 
                     <div>
-                        <label htmlFor="gitlab-username" className="label text-zinc-300 font-bold">Gitlab Username</label>
+                        <label htmlFor="gitlab-username" className="label font-bold">Gitlab Username</label>
                         <div className="relative mt-2">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaGitlab className="h-4 w-4 text-zinc-300" />
+                                <FaGitlab className="h-4 w-4 text-gray-600 dark:text-white" />
                             </div>
 
                             <input 
                                 type="text" 
                                 id="gitlab-username" 
                                 {...register("gitlab_username", { required: "GitLab username is required" })}
-                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-300 bg-[#1a202c] placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                                 placeholder="Enter your gitlab username"
                                 required
                             />
@@ -124,7 +124,7 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
 
                 <button 
                     type="submit"
-                    className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-zinc-300 bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-zinc-100 dark:text-zinc-300 bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                 >
                     {isLoading ? (

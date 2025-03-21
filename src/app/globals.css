@@ -3,7 +3,7 @@
 
 :root {
   --primary: #8B5CF6;
-  --primary-dark: red;
+  --primary-dark: #7c4bed;
 
   --background: #F8FAFC;
   --foreground: #171717;
@@ -11,6 +11,30 @@
   --card: #ffffff;
   
   --muted-foreground: var(--color-gray-500);
+
+  .react-calendar-heatmap .color-scale-0 {
+    fill: var(--color-gray-200);
+  }
+  
+  .react-calendar-heatmap .color-scale-1 {
+    fill: #c6e48b; 
+  }
+  
+  .react-calendar-heatmap .color-scale-2 {
+    fill: #7bc96f; 
+  }
+  
+  .react-calendar-heatmap .color-scale-3 {
+    fill: #239a3b; 
+  } 
+  
+  .react-calendar-heatmap .color-scale-4 {
+    fill: #196127;
+  }
+  
+  .react-calendar-heatmap .color-scale-5 {
+    fill: var(--color-gray-200);
+  }
 }
 
 .dark {
@@ -20,6 +44,30 @@
   --card: #1F2937;
 
   --muted-foreground: var(--color-gray-400);
+
+  .react-calendar-heatmap .color-scale-0 {
+    fill: #232e44;
+  }
+  
+  .react-calendar-heatmap .color-scale-1 {
+    fill: #196127; 
+  }
+  
+  .react-calendar-heatmap .color-scale-2 {
+    fill: #239a3b; 
+  }
+  
+  .react-calendar-heatmap .color-scale-3 {
+    fill: #7bc96f; 
+  }
+  
+  .react-calendar-heatmap .color-scale-4 {
+    fill: #c6e48b;
+  }
+  
+  .react-calendar-heatmap .color-scale-5 {
+    fill: #232e44; 
+  }
 }
 
 @theme{
@@ -38,26 +86,3 @@ body {
   color: var(--foreground);
 }
 
-.react-calendar-heatmap .color-scale-0 {
-  fill: #18181B;
-}
-
-.react-calendar-heatmap .color-scale-1 {
-  fill: #196127; 
-}
-
-.react-calendar-heatmap .color-scale-2 {
-  fill: #239a3b; 
-}
-
-.react-calendar-heatmap .color-scale-3 {
-  fill: #7bc96f; 
-}
-
-.react-calendar-heatmap .color-scale-4 {
-  fill: #c6e48b;
-}
-
-.react-calendar-heatmap .color-scale-5 {
-  fill: #18181B; 
-}

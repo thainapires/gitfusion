@@ -27,7 +27,7 @@ export default function Home() {
               <span>Get Started</span>
             </button>
             <button 
-              className="py-[0.4rem] px-8 rounded-md text-sm font-medium shadow border border-gray-200 dark:border-gray-600 h-10 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
+              className="py-[0.4rem] px-8 rounded-md text-sm font-medium shadow border border-gray-200 dark:border-gray-600 h-10 cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
               onClick={() => window.location.href = '/dashboard'}
             >
               Learn More
@@ -38,7 +38,7 @@ export default function Home() {
           <div className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
             <h3 className="text-xl font-semibold mb-3">Unified View</h3>
             <p className="mb-4 text-muted-foreground">See all your contributions in one place, regardless of platform</p>
-            <span className="mt-2 bg-emerald-600 px-3 py-1 text-sm font-medium text-white opacity-90 ring-offset-background dark:bg-yellow-500 rounded-sm">Available</span>
+            <span className="mt-2 bg-emerald-600 px-3 py-1 text-sm font-medium text-white opacity-90 ring-offset-background  rounded-sm">Available</span>
           </div>
 
           <div className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-card bg-muted p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">

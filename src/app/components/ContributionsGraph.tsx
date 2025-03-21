@@ -4,8 +4,8 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
 import { Tooltip } from 'react-tooltip';
 import { Contribution, Contributions } from "../api/contributions/route";
-import ContributionsLegend from './ContributionsLegend';
 import { shiftDateForward } from '../utils/index';
+import ContributionsLegend from './ContributionsLegend';
 interface ContributionsProps {
     contributions: Contributions
 }
