@@ -1,6 +1,6 @@
 ### Git Fusion 🐱🦊
 
-![screenzy-1742142969604](https://github.com/user-attachments/assets/6bf8cfd3-155f-4bc5-97de-5aa54d9ea517)
+![scr-gitfusion](https://github.com/user-attachments/assets/74ffba42-7f8f-465d-b18f-ad364412a995)
 
 
 ### 🚀  Try out Git Fusion: [https://gitfusion.vercel.app](https://gitfusion.vercel.app)
