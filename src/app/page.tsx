@@ -1,66 +1,64 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { FaGithub, FaPlus } from "react-icons/fa";
-import { FaGitlab } from "react-icons/fa6";
-import { Contributions } from "./api/contributions/route";
-import ContributionsContainer from "./components/ContributionsContainer";
-import Footer from "./components/Footer";
-import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
+import { LuGithub } from "react-icons/lu";
+import { RiGitlabLine } from "react-icons/ri";
+import { ThemeToggle } from "./components/layout/theme-toggle";
 
 export default function Home() {
-  const [contributions, setContributions] = useState<Contributions | null>(null)
-  const [totalContributionsCount, setTotalContributionsCount] = useState<number| null>(0)
-  const [githubUsername, setGithubUsername] = useState<string>('')
-  const [gitlabUsername, setGitlabUsername] = useState<string>('')
-
-  const handleContributionsFetch = (contributionsData: ContributionsResponse, usernameData: UsernameData) => {
-    setContributions(contributionsData.data.contributions)
-    setTotalContributionsCount(contributionsData.data.totalContributionsCount)
-    setGithubUsername(usernameData.githubUsername)
-    setGitlabUsername(usernameData.gitlabUsername)
-  }
-  
   return (
-    <div className="min-h-screen bg-[#1a202c] flex items-center justify-center">
-      <div className="container px-4">
-        <div className="text-center mb-10">
-          <div className="flex mx-auto justify-center items-center align-items-center gap-4">
-            <FaGithub className="h-12 w-12 mb-5 text-zinc-400 hover:scale-110 hover:text-purple-500"/>
-            <FaPlus className="text-zinc-400"/>
-            <FaGitlab className="h-12 w-12 mb-5 text-zinc-400 hover:scale-110 hover:text-orange-500"/>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-emerald-300 to-emerald-700 bg-clip-text text-transparent mb-4">
-            Git Fusion
-          </h1>
-          <p className="text-lg text-zinc-300 max-w-2xl mx-auto">
-            Visualize your Github and Gitlab contributions in one graph
-          </p>
+    <main className="w-full min-h-screen flex flex-col items-center justify-center bg-background text-foreground pt-24 md:pt-0">
+      <div className="max-w-4xl text-center px-4">
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <LuGithub size={36} className="text-primary" />
+          <div className="text-3xl font-bold">+</div>
+          <RiGitlabLine size={36} className="text-primary" />
         </div>
         
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-[#2d3748] rounded-lg shadow-lg">
-            {!contributions ? (
-              <UserInformationForm onContributionsFetch={handleContributionsFetch}/>
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }} 
-              >
-                <ContributionsContainer 
-                  contributions={contributions} 
-                  totalContributionsCount={totalContributionsCount} 
-                  githubUsername={githubUsername} 
-                  gitlabUsername={gitlabUsername}
-                  setContributions={setContributions}/>
-              </motion.div>
-            )}
+        <h1 className="text-5xl font-bold mb-4">Git Fusion</h1>
+        <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          Seamlessly combine your GitHub and GitLab contributions into a unified, interactive visualization
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <button 
+              className="bg-primary hover:bg-violet-600 hover:text-white py-[0.4rem] px-8 rounded-md text-sm font-medium shadow text-background h-10 cursor-pointer"
+              onClick={() => window.location.href = '/dashboard'}
+            >
+              <span>Get Started</span>
+            </button>
+            <button 
+              className="py-[0.4rem] px-8 rounded-md text-sm font-medium shadow border border-gray-200 dark:border-gray-600 h-10 cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
+              onClick={() => window.location.href = '/dashboard'}
+              disabled
+            >
+              Learn More
+            </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <h3 className="text-xl font-semibold mb-3">Unified View</h3>
+            <p className="mb-4 text-muted-foreground">See all your contributions in one place, regardless of platform</p>
+            <span className="mt-2 bg-emerald-600 px-3 py-1 text-sm font-medium text-white opacity-90 ring-offset-background  rounded-sm">Available</span>
           </div>
-          <Footer />        
+
+          <div className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-card bg-muted p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <h3 className="text-xl font-semibold mb-3">Interactive Graphs</h3>
+            <p className="mb-4 text-muted-foreground">Explore your activity with detailed, interactive visualizations</p>
+            <span className="mt-2 animate-pulse bg-yellow-600 px-3 py-1 text-sm font-medium text-white opacity-90 ring-offset-background dark:bg-yellow-500 rounded-sm">Coming Soon</span>
+          </div>
+
+          <div className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-card bg-muted p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <h3 className="text-xl font-semibold mb-3">Cross-Platform Insights</h3>
+            <p className="mb-4 text-muted-foreground">Gain valuable insights across all your repositories</p>
+            <span className="mt-2 animate-pulse bg-yellow-600 px-3 py-1 text-sm font-medium text-white opacity-90 ring-offset-background dark:bg-yellow-500 rounded-sm">Coming Soon</span>
+          </div>
+        </div>
+        
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
         </div>
       </div>
-    </div>
+    </main>
   );
 }

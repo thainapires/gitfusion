@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 // @ts-ignore
-import * as d3 from 'd3';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
