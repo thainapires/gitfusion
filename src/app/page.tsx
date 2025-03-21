@@ -8,6 +8,7 @@ import { Contributions } from "./api/contributions/route";
 import ContributionsContainer from "./components/ContributionsContainer";
 import Footer from "./components/Footer";
 import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
+import { ThemeToggle } from "./components/layout/theme-toggle";
 
 export default function Home() {
   const [contributions, setContributions] = useState<Contributions | null>(null)
@@ -26,6 +27,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#1a202c] flex items-center justify-center">
       <div className="container px-4">
         <div className="text-center mb-10">
+          <ThemeToggle />
           <div className="flex mx-auto justify-center items-center align-items-center gap-4">
             <FaGithub className="h-12 w-12 mb-5 text-zinc-400 hover:scale-110 hover:text-purple-500"/>
             <FaPlus className="text-zinc-400"/>
@@ -34,7 +36,7 @@ export default function Home() {
           <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-emerald-300 to-emerald-700 bg-clip-text text-transparent mb-4">
             Git Fusion
           </h1>
-          <p className="text-lg text-zinc-300 max-w-2xl mx-auto">
+          <p className="text-lg dark:text-red-900 text-zinc-300 max-w-2xl mx-auto">
             Visualize your Github and Gitlab contributions in one graph
           </p>
         </div>
