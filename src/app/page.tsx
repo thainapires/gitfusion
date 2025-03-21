@@ -1,68 +1,52 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { FaGithub, FaPlus } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
 import { FaGitlab } from "react-icons/fa6";
-import { Contributions } from "./api/contributions/route";
-import ContributionsContainer from "./components/ContributionsContainer";
-import Footer from "./components/Footer";
-import UserInformationForm, { ContributionsResponse, UsernameData } from "./components/UserInformationForm";
 import { ThemeToggle } from "./components/layout/theme-toggle";
 
 export default function Home() {
-  const [contributions, setContributions] = useState<Contributions | null>(null)
-  const [totalContributionsCount, setTotalContributionsCount] = useState<number| null>(0)
-  const [githubUsername, setGithubUsername] = useState<string>('')
-  const [gitlabUsername, setGitlabUsername] = useState<string>('')
-
-  const handleContributionsFetch = (contributionsData: ContributionsResponse, usernameData: UsernameData) => {
-    setContributions(contributionsData.data.contributions)
-    setTotalContributionsCount(contributionsData.data.totalContributionsCount)
-    setGithubUsername(usernameData.githubUsername)
-    setGitlabUsername(usernameData.gitlabUsername)
-  }
-  
   return (
-    <div className="min-h-screen bg-[#1a202c] flex items-center justify-center">
-      <div className="container px-4">
-        <div className="text-center mb-10">
-          <ThemeToggle />
-          <div className="flex mx-auto justify-center items-center align-items-center gap-4">
-            <FaGithub className="h-12 w-12 mb-5 text-zinc-400 hover:scale-110 hover:text-purple-500"/>
-            <FaPlus className="text-zinc-400"/>
-            <FaGitlab className="h-12 w-12 mb-5 text-zinc-400 hover:scale-110 hover:text-orange-500"/>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-emerald-300 to-emerald-700 bg-clip-text text-transparent mb-4">
-            Git Fusion
-          </h1>
-          <p className="text-lg dark:text-red-900 text-zinc-300 max-w-2xl mx-auto">
-            Visualize your Github and Gitlab contributions in one graph
-          </p>
+    <main className="w-full min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
+      <div className="max-w-3xl text-center px-4">
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <FaGithub size={36} className="text-primary" />
+          <div className="text-3xl font-bold">+</div>
+          <FaGitlab size={36} className="text-primary" />
         </div>
         
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-[#2d3748] rounded-lg shadow-lg">
-            {!contributions ? (
-              <UserInformationForm onContributionsFetch={handleContributionsFetch}/>
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }} 
-              >
-                <ContributionsContainer 
-                  contributions={contributions} 
-                  totalContributionsCount={totalContributionsCount} 
-                  githubUsername={githubUsername} 
-                  gitlabUsername={gitlabUsername}
-                  setContributions={setContributions}/>
-              </motion.div>
-            )}
+        <h1 className="text-5xl font-bold mb-4">Git Fusion</h1>
+        <p className="text-xl text-muted-foreground mb-8">
+          Seamlessly combine your GitHub and GitLab contributions into a unified, interactive visualization
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <button className="gap-2">
+            <span>Get Started</span>
+          </button>
+          <button>
+            Learn More
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="p-6 rounded-lg border bg-card">
+            <h3 className="text-lg font-medium mb-2">Unified View</h3>
+            <p className="text-muted-foreground">See all your contributions in one place, regardless of platform</p>
           </div>
-          <Footer />        
+          <div className="p-6 rounded-lg border bg-card">
+            <h3 className="text-lg font-medium mb-2">Interactive Graphs</h3>
+            <p className="text-muted-foreground">Explore your activity with detailed, interactive visualizations</p>
+          </div>
+          <div className="p-6 rounded-lg border bg-card">
+            <h3 className="text-lg font-medium mb-2">Cross-Platform Insights</h3>
+            <p className="text-muted-foreground">Gain valuable insights across all your repositories</p>
+          </div>
+        </div>
+        
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
