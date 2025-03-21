@@ -2,29 +2,33 @@
 @custom-variant dark (&:where(.dark, .dark *));   
 
 :root {
-  --background: #ffffff;
+  --primary: #8B5CF6;
+  --primary-dark: red;
+
+  --background: #F8FAFC;
   --foreground: #171717;
-  --color-primary: #8B5CF6;
+  
+  --card: #ffffff;
+  
+  --muted-foreground: var(--color-gray-500);
 }
 
 .dark {
   --background: #111827;
   --foreground: #ededed;
+  
+  --card: #1F2937;
+
+  --muted-foreground: var(--color-gray-400);
 }
 
-/* Utility classes for primary colors */
-.text-primary { color: var(--color-primary); }
-.bg-primary { background-color: var(--color-primary); }
-.border-primary { border-color: var(--color-primary); }
-
-/* Secondary colors */
-/* .text-secondary { color: var(--color-secondary); }
-.bg-secondary { background-color: var(--color-secondary); }
-.border-secondary { border-color: var(--color-secondary); }
- */
 @theme{
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-card: var(--card);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary-dark: var(--primary-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
