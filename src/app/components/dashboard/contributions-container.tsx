@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Contributions } from "../api/contributions/route";
-import ContributionsGraph from "./ContributionsGraph";
-import ProfilePicture from "./ProfilePicture";
+import { Contributions } from "../../api/contributions/route";
+import ContributionsGraph from "./contributions-graph";
+import ProfilePicture from "./profile-picture";
 interface ContributionsContainerProps {
     contributions: Contributions;
     totalContributionsCount: number | null;

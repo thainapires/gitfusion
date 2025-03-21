@@ -8,7 +8,7 @@ import { IoIosWarning } from "react-icons/io";
 import { Tooltip } from 'react-tooltip';
 import { toast, Toaster } from "sonner";
 import { z } from "zod";
-import { Contributions } from "../api/contributions/route";
+import { Contributions } from "../../api/contributions/route";
 
 const FormData = z.object({
     github_username: z.string(),
@@ -88,7 +88,7 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                                 type="text" 
                                 id="github-username" 
                                 {...register("github_username", { required: "GitHub username is required" })}
-                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
                                 placeholder="Enter your github username"
                                 required
                             />
@@ -106,7 +106,7 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                                 type="text" 
                                 id="gitlab-username" 
                                 {...register("gitlab_username", { required: "GitLab username is required" })}
-                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
                                 placeholder="Enter your gitlab username"
                                 required
                             />
@@ -122,9 +122,13 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                     </div>
                 </div>
 
+                {/* <button 
+              className="py-[0.4rem] px-8 rounded-md text-sm font-medium shadow text-background h-10 cursor-pointer"
+              onClick={() => window.location.href = '/dashboard'}
+            > */}
                 <button 
                     type="submit"
-                    className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-zinc-100 dark:text-zinc-300 bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold bg-primary hover:bg-violet-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                 >
                     {isLoading ? (

@@ -29,6 +29,7 @@ export default function Home() {
             <button 
               className="py-[0.4rem] px-8 rounded-md text-sm font-medium shadow border border-gray-200 dark:border-gray-600 h-10 cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
               onClick={() => window.location.href = '/dashboard'}
+              disabled
             >
               Learn More
             </button>

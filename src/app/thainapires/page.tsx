@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Contributions } from "../api/contributions/route";
-import ContributionsContainer from "../components/ContributionsContainer";
+import ContributionsContainer from "../components/dashboard/contributions-container";
 import Footer from "../components/Footer";
 
 export default function ThainaPiresPage() {
