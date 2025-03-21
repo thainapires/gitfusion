@@ -1,18 +1,14 @@
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Noto_Color_Emoji } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const notoColorEmoji = Noto_Color_Emoji({
+  variable: "--font-emoji",
+  subsets: ["emoji"],
+  weight: ["400"],
+})
 
 export const metadata: Metadata = {
   title: "Git Fusion",
@@ -22,16 +18,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${notoColorEmoji.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}> 
           {children}
           <Analytics />

@@ -1,7 +1,7 @@
 "use client";
 
-import { FaGithub } from "react-icons/fa";
-import { FaGitlab } from "react-icons/fa6";
+import { LuGithub } from "react-icons/lu";
+import { RiGitlabLine } from "react-icons/ri";
 import { ThemeToggle } from "./components/layout/theme-toggle";
 
 export default function Home() {
@@ -9,9 +9,9 @@ export default function Home() {
     <main className="w-full min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
       <div className="max-w-3xl text-center px-4">
         <div className="flex items-center justify-center gap-3 mb-6">
-          <FaGithub size={36} className="text-primary" />
+          <LuGithub size={36} className="text-primary" />
           <div className="text-3xl font-bold">+</div>
-          <FaGitlab size={36} className="text-primary" />
+          <RiGitlabLine size={36} className="text-primary" />
         </div>
         
         <h1 className="text-5xl font-bold mb-4">Git Fusion</h1>
