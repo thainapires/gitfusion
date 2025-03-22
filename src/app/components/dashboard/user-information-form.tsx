@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
 import { FaGitlab } from "react-icons/fa6";
 import { IoIosWarning } from "react-icons/io";
-import { Tooltip } from 'react-tooltip';
+import { MdArrowOutward } from "react-icons/md";
 import { toast, Toaster } from "sonner";
 import { z } from "zod";
 import { Contributions } from "../../api/contributions/route";
@@ -82,7 +82,7 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                         <label htmlFor="github-username" className="label font-bold">GitHub Username</label>
                         <div className="relative mt-2">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaGithub className="h-5 w-5 text-gray-600 dark:text-white" />
+                                <FaGithub className="h-5 w-5 text-primary" />
                             </div>
                             <input 
                                 type="text" 
@@ -99,7 +99,7 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                         <label htmlFor="gitlab-username" className="label font-bold">Gitlab Username</label>
                         <div className="relative mt-2">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaGitlab className="h-4 w-4 text-gray-600 dark:text-white" />
+                                <FaGitlab className="h-4 w-4  text-primary" />
                             </div>
 
                             <input 
@@ -111,12 +111,29 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                                 required
                             />
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                <Tooltip id="gitlab-warning"/>
-                                <IoIosWarning 
-                                    className="h-5 w-5 text-yellow-500"
-                                    data-tooltip-id="gitlab-warning"
-                                    data-tooltip-content="Don't forget to enable contributions visibility in your GitLab account. You can do this by accessing gitlab profile settings"
-                                />
+                                
+                                <div className="relative group">
+                                    <IoIosWarning 
+                                        className="h-5 w-5 text-yellow-500"
+                                    />
+
+                                    <div
+                                        className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition duration-100 transform group-hover:translate-y-0 translate-y-2"
+                                    >
+                                        <div className="bg-card w-max max-w-xs text-white rounded-lg px-4 py-4 shadow-xl drop-shadow">
+                                            <p className="font-bold text-md mb-1">Hello there! 👋</p>
+                                            <p className="text-sm">
+                                                Don't forget to enable <strong>contributions visibility</strong> in your GitLab account.
+                                                You can do this by accessing gitlab profile settings
+                                                <br /><br />
+                                                <div className="flex items-center gap-1">
+                                                    <a href="/" className="text-primary">Gitlab Profile Settings! </a>
+                                                    <MdArrowOutward className="text-primary"/>
+                                                </div>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -128,7 +145,7 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
             > */}
                 <button 
                     type="submit"
-                    className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold bg-primary hover:bg-violet-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-primary hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                 >
                     {isLoading ? (
