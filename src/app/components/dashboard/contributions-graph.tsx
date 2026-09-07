@@ -3,8 +3,8 @@
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
 import { Tooltip } from 'react-tooltip';
-import { Contribution, Contributions } from "../../api/contributions/route";
-import { shiftDateForward } from '../../utils/index';
+import { Contribution, Contributions } from "../../types/contributions";
+import { parseDateStringAsLocalDate } from '../../utils/index';
 import ContributionsLegend from './contributions-legend';
 interface ContributionsProps {
     contributions: Contributions
@@ -12,21 +12,20 @@ interface ContributionsProps {
 
 export default function ContributionsGraph({contributions}: ContributionsProps) {
 
-    const shiftedContributions = contributions.map((contribution) => ({
+    const graphContributions = contributions.map((contribution) => ({
         ...contribution,
-        date: shiftDateForward(contribution.date),
+        date: parseDateStringAsLocalDate(contribution.date),
     }));
 
-    const startDate = new Date(shiftedContributions[0]?.date);
-    const endDate = new Date(shiftedContributions[shiftedContributions.length - 1]?.date);
+    const startDate = parseDateStringAsLocalDate(contributions[0]?.date);
+    const endDate = parseDateStringAsLocalDate(contributions[contributions.length - 1]?.date);
 
-    const tooltipDataAttrs = (value: any) => {
+    const tooltipDataAttrs = (value: { date?: Date, count?: number }) => {
         if (value && value.date) {
-            const date = new Date(value.date);
             const contributionsOnDate = value.count || 0;
             return {
                 'data-tooltip-id': 'contributions-tooltip',
-                'data-tooltip-content': `${contributionsOnDate} contribution${contributionsOnDate !== 1 ? 's' : ''} on ${date.toLocaleDateString('pt-BR')}`,
+                'data-tooltip-content': `${contributionsOnDate} contribution${contributionsOnDate !== 1 ? 's' : ''} on ${value.date.toLocaleDateString('pt-BR')}`,
             };
         }
         return {};
@@ -54,7 +53,7 @@ export default function ContributionsGraph({contributions}: ContributionsProps) 
             <CalendarHeatmap
                 startDate={startDate}
                 endDate={endDate}
-                values={shiftedContributions}
+                values={graphContributions}
                 showWeekdayLabels
                 showOutOfRangeDays
                 gutterSize={2}

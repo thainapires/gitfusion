@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Contributions } from "../api/contributions/route";
 import ContributionsContainer from "../components/dashboard/contributions-container";
-import UserInformationForm, { ContributionsResponse, UsernameData } from "../components/dashboard/user-information-form";
+import UserInformationForm, { UsernameData } from "../components/dashboard/user-information-form";
 import { Header } from "../components/layout/header";
+import { Contributions, ContributionsResponse } from "../types/contributions";
 
 export default function Home() {
   const [contributions, setContributions] = useState<Contributions | null>(null)

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Contributions } from "../api/contributions/route";
 import ContributionsContainer from "../components/dashboard/contributions-container";
 import Footer from "../components/Footer";
+import { Contributions } from "../types/contributions";
 
 export default function ThainaPiresPage() {
     const [contributions, setContributions] = useState<Contributions | null>(null)
@@ -11,7 +11,7 @@ export default function ThainaPiresPage() {
 
     const fetchContributions = async (data: { github_username: string, gitlab_username: string }) => {
         try {
-            const response = await fetch(`/api/contributions?github_username=${data.github_username}&gitlab_username=${data.gitlab_username}`);
+            const response = await fetch(`/api/contributions?github_username=${encodeURIComponent(data.github_username)}&gitlab_username=${encodeURIComponent(data.gitlab_username)}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch contributions')
             }

@@ -1,18 +1,37 @@
 import axios from 'axios';
 import { NextResponse } from 'next/server';
+import { Contribution } from '@/app/types/contributions';
 
-export type Contribution = {
+type GitHubContributionDay = {
+  contributionCount: number;
   date: string;
-  count: number;
-}
+};
 
-export type Contributions = Contribution[]
+type GitHubContributionWeek = {
+  contributionDays: GitHubContributionDay[];
+};
+
+type GitHubContributionsResponse = {
+  data?: {
+    user?: {
+      contributionsCollection?: {
+        contributionCalendar?: {
+          weeks?: GitHubContributionWeek[];
+        };
+      };
+    };
+  };
+  errors?: {
+    type?: string;
+    message?: string;
+  }[];
+};
+
+type GitLabCalendarResponse = Record<string, number>;
 
 export async function GET(req: Request) {
 
   try{
-    const contributions: Contribution[] = []
-    
     const { searchParams } = new URL(req.url)
     const githubUsername = searchParams.get('github_username')
     const gitlabUsername = searchParams.get('gitlab_username')
@@ -31,8 +50,10 @@ export async function GET(req: Request) {
       )
     }
 
-    const githubResponse = await getGithubContributionsData(githubUsername)
-    const gitlabResponse = await getGitlabContributionsData(gitlabUsername)
+    const [githubResponse, gitlabResponse] = await Promise.all([
+      getGithubContributionsData(githubUsername),
+      getGitlabContributionsData(gitlabUsername),
+    ])
 
     if("error" in githubResponse) {
       return new NextResponse(
@@ -48,29 +69,7 @@ export async function GET(req: Request) {
       )
     }
 
-    //Merge contributions from both services
-    if(Array.isArray(githubResponse)) {
-      contributions.push(...githubResponse)
-    }else{
-      return new NextResponse(
-        JSON.stringify({error: 'Failed to fetch Github contributions'}),
-        { status: 400 }
-      )
-    }
-
-    if(Array.isArray(gitlabResponse)) {
-      contributions.forEach((element, index) => {
-        const itemIndex = gitlabResponse.findIndex(item => item.date === element.date)
-        if(itemIndex !== -1){
-          contributions[index].count = contributions[index].count + gitlabResponse[itemIndex].count
-        }
-      })
-    }else{
-      return new NextResponse(
-        JSON.stringify({error: 'Failed to fetch Gitlab contributions'}),
-        { status: 400 }
-      )
-    }
+    const contributions = mergeContributions(githubResponse, gitlabResponse)
 
     const totalContributionsCount = contributions.reduce((sum, c) => {
       return sum + c.count
@@ -99,13 +98,18 @@ export async function GET(req: Request) {
 
 async function getGithubContributionsData(githubUsername: string): Promise<Contribution[] | { error: string }> {
   try{
+    const githubToken = process.env.GITHUB_PERSONAL_TOKEN;
+
+    if (!githubToken) {
+      return { error: "GitHub token is not configured" };
+    }
+
     const response = await axios.post('https://api.github.com/graphql', {
       query: `
-          query { 
-              user(login: "${githubUsername}") { 
+          query($login: String!) { 
+              user(login: $login) { 
                   contributionsCollection { 
                       contributionCalendar { 
-                          totalContributions 
                           weeks { 
                               contributionDays { 
                                   contributionCount 
@@ -116,10 +120,13 @@ async function getGithubContributionsData(githubUsername: string): Promise<Contr
                   } 
               } 
           }
-      `
+      `,
+      variables: {
+        login: githubUsername,
+      },
     }, {
         headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GITHUB_PERSONAL_TOKEN}`,
+            'Authorization': `Bearer ${githubToken}`,
             'Content-Type': 'application/json'
         }
     });
@@ -128,10 +135,12 @@ async function getGithubContributionsData(githubUsername: string): Promise<Contr
       return { error: "Failed to fetch data from GitHub" };
     }
 
-    if(response.data.errors){
+    const responseData = response.data as GitHubContributionsResponse;
+
+    if(responseData.errors){
       let errorMessage = { error: "Failed to fetch data from GitHub"}
       
-      switch(response.data.errors[0].type){
+      switch(responseData.errors[0].type){
         case 'NOT_FOUND':
           errorMessage = { error: `User ${githubUsername} not found.`}
           break
@@ -142,10 +151,10 @@ async function getGithubContributionsData(githubUsername: string): Promise<Contr
       return errorMessage
     }
 
-    const weeks = response.data?.data?.user?.contributionsCollection?.contributionCalendar?.weeks || [];
+    const weeks = responseData.data?.user?.contributionsCollection?.contributionCalendar?.weeks || [];
 
-    const githubData: Contribution[] = weeks.flatMap((week: any) =>
-      week.contributionDays.map((day: any) => ({
+    const githubData: Contribution[] = weeks.flatMap((week) =>
+      week.contributionDays.map((day) => ({
         date: day.date,
         count: day.contributionCount,
       }))
@@ -167,7 +176,9 @@ async function getGithubContributionsData(githubUsername: string): Promise<Contr
 
 async function getGitlabContributionsData(gitlabUsername: string): Promise<Contribution[] | { error: string }> {
   try{
-    const response = await axios.get(`https://gitlab.com/users/${gitlabUsername}/calendar.json`)
+    const response = await axios.get<GitLabCalendarResponse>(
+      `https://gitlab.com/users/${encodeURIComponent(gitlabUsername)}/calendar.json`
+    )
 
     if(response.status !== 200) {
       return {error: "Failed to fetch data from Gitlab"}
@@ -182,7 +193,7 @@ async function getGitlabContributionsData(gitlabUsername: string): Promise<Contr
 
   } catch(error) {
     console.error("🚨 Unexpected Error in Gitlab Data Fetching 🚨", {
-      endpoint: "POST https://gitlab.com/users/${gitlabUsername}/calendar.json",
+      endpoint: "GET https://gitlab.com/users/${gitlabUsername}/calendar.json",
       message: error instanceof Error ? error.message : "Unknown error occurred",
       location: "getGitlabContributionsData function",
       timestamp: new Date().toISOString(),
@@ -191,4 +202,15 @@ async function getGitlabContributionsData(gitlabUsername: string): Promise<Contr
     });
     return { error: "An unexpected error ocurred. Please try again later or check if the user is valid or if the contributios visibility for the user are public."}
   }
+}
+
+function mergeContributions(...sources: Contribution[][]): Contribution[] {
+  const contributionsByDate = new Map<string, number>();
+
+  sources.flat().forEach(({ date, count }) => {
+    contributionsByDate.set(date, (contributionsByDate.get(date) || 0) + count);
+  });
+
+  return Array.from(contributionsByDate, ([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }

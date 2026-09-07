@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Contributions } from "../../api/contributions/route";
+import { Contributions } from "../../types/contributions";
 import ContributionsGraph from "./contributions-graph";
 import ProfilePicture from "./profile-picture";
 interface ContributionsContainerProps {
@@ -23,18 +23,20 @@ export default function ContributionsContainer({contributions, setContributions,
 
     const getGithubProfilePicture = async () => {
         try {
-            const response = await axios.get(`https://api.github.com/users/thainapires`)
+            const response = await axios.get(`https://api.github.com/users/${encodeURIComponent(githubUsername)}`)
             setProfilePictureUrl(response.data.avatar_url)
         }catch(error){
             console.log("Error fetching profile picture:", error)
+            setProfilePictureUrl("")
         } finally {
             setLoading(false);
         }
     }
 
     useEffect(() => {
+        setLoading(true)
         getGithubProfilePicture()
-    }, [])
+    }, [githubUsername])
 
     const onClose = () => {
         setContributions(null)

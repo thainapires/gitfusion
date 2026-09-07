@@ -8,7 +8,7 @@ import { IoIosWarning } from "react-icons/io";
 import { Tooltip } from 'react-tooltip';
 import { toast, Toaster } from "sonner";
 import { z } from "zod";
-import { Contributions } from "../../api/contributions/route";
+import { ContributionsResponse } from "../../types/contributions";
 
 const FormData = z.object({
     github_username: z.string(),
@@ -17,12 +17,6 @@ const FormData = z.object({
 
 type FormData = z.infer<typeof FormData>
 
-export type ContributionsResponse = {
-    data: {
-        contributions: Contributions        
-        totalContributionsCount: number
-    }
-}
 
 export type UsernameData = {
     githubUsername: string,
@@ -41,7 +35,7 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
             setIsLoading(true)
 
             const response = await fetch(
-                `/api/contributions?github_username=${data.github_username}&gitlab_username=${data.gitlab_username}`
+                `/api/contributions?github_username=${encodeURIComponent(data.github_username)}&gitlab_username=${encodeURIComponent(data.gitlab_username)}`
             )
 
             const result = await response.json()
