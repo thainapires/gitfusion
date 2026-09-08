@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FieldErrors, useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
 import { FaGitlab } from "react-icons/fa6";
 import { IoIosWarning } from "react-icons/io";
@@ -11,12 +11,11 @@ import { z } from "zod";
 import { ContributionsResponse } from "../../types/contributions";
 
 const FormData = z.object({
-    github_username: z.string(),
-    gitlab_username: z.string(),
+    github_username: z.string().trim().min(1, "GitHub username is required"),
+    gitlab_username: z.string().trim().min(1, "GitLab username is required"),
 })
 
 type FormData = z.infer<typeof FormData>
-
 
 export type UsernameData = {
     githubUsername: string,
@@ -27,13 +26,12 @@ interface UserInformationFormProps {
 }
 
 export default function UserInformationForm({onContributionsFetch}: UserInformationFormProps) {
-    const { register, handleSubmit, formState: {errors}} = useForm<FormData>()
-    const [isLoading, setIsLoading] = useState(false)
+    const { register, handleSubmit, formState: { isSubmitting } } = useForm<FormData>({
+        resolver: zodResolver(FormData),
+    })
 
-    const fetchContributions = async (data: {github_username: string, gitlab_username: string}) => {
+    const fetchContributions = async (data: FormData) => {
         try {
-            setIsLoading(true)
-
             const response = await fetch(
                 `/api/contributions?github_username=${encodeURIComponent(data.github_username)}&gitlab_username=${encodeURIComponent(data.gitlab_username)}`
             )
@@ -51,26 +49,20 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
 
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
-        } finally {
-            setIsLoading(false);
         }
     };
 
-    const onSubmit = (data: { github_username: string, gitlab_username: string }) => {
-        fetchContributions(data);
-    }
-
-    const onError = (errors: any) => {
-        for (const field in errors) {
-            if (errors[field]?.message) {
-                toast.error(errors[field].message);
+    const onError = (errors: FieldErrors<FormData>) => {
+        Object.values(errors).forEach((error) => {
+            if (error?.message) {
+                toast.error(error.message);
             }
-        }
+        });
     };
 
     return (
         <div className="flex justify-center h-full items-center p-6 sm:p-8">
-            <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 p-8 w-full max-w-xl">
+            <form onSubmit={handleSubmit(fetchContributions, onError)} className="space-y-6 p-8 w-full max-w-xl">
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="github-username" className="label font-bold">GitHub Username</label>
@@ -81,10 +73,9 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                             <input 
                                 type="text" 
                                 id="github-username" 
-                                {...register("github_username", { required: "GitHub username is required" })}
+                                {...register("github_username")}
                                 className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
                                 placeholder="Enter your github username"
-                                required
                             />
                         </div>
                     </div>
@@ -99,10 +90,9 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                             <input 
                                 type="text" 
                                 id="gitlab-username" 
-                                {...register("gitlab_username", { required: "GitLab username is required" })}
+                                {...register("gitlab_username")}
                                 className="block w-full pl-10 pr-3 py-2 rounded-md text-slate-600 dark:text-slate-300 bg-card border border-gray-300 dark:border-none placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
                                 placeholder="Enter your gitlab username"
-                                required
                             />
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                                 <Tooltip id="gitlab-warning"/>
@@ -116,16 +106,12 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                     </div>
                 </div>
 
-                {/* <button 
-              className="py-[0.4rem] px-8 rounded-md text-sm font-medium shadow text-background h-10 cursor-pointer"
-              onClick={() => window.location.href = '/dashboard'}
-            > */}
                 <button 
                     type="submit"
                     className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold bg-primary hover:bg-violet-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                 >
-                    {isLoading ? (
+                    {isSubmitting ? (
                         <>
                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

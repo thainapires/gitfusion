@@ -1,7 +1,7 @@
 import { useTheme } from "next-themes";
 
 export default function ContributionsLegend (){
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
   const lightThemeColorPallete = ["#DDDEDF", "#196127", "#239a3b", "#7bc96f", "#c6e48b"];
   const darkThemeColorPallete = ["#232e44", "#196127", "#239a3b", "#7bc96f", "#c6e48b"];
 

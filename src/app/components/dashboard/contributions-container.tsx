@@ -21,20 +21,20 @@ export default function ContributionsContainer({contributions, setContributions,
     const [profilePictureUrl, setProfilePictureUrl] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(true)
 
-    const getGithubProfilePicture = async () => {
-        try {
-            const response = await axios.get(`https://api.github.com/users/${encodeURIComponent(githubUsername)}`)
-            setProfilePictureUrl(response.data.avatar_url)
-        }catch(error){
-            console.log("Error fetching profile picture:", error)
-            setProfilePictureUrl("")
-        } finally {
-            setLoading(false);
-        }
-    }
-
     useEffect(() => {
-        setLoading(true)
+        const getGithubProfilePicture = async () => {
+            try {
+                setLoading(true)
+                const response = await axios.get(`https://api.github.com/users/${encodeURIComponent(githubUsername)}`)
+                setProfilePictureUrl(response.data.avatar_url)
+            }catch(error){
+                console.log("Error fetching profile picture:", error)
+                setProfilePictureUrl("")
+            } finally {
+                setLoading(false);
+            }
+        }
+
         getGithubProfilePicture()
     }, [githubUsername])
 

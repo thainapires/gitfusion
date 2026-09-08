@@ -1,11 +1,8 @@
 import Link from "next/link";
-import { useState } from "react";
 import { FaCodeMerge } from "react-icons/fa6";
 import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
-    const [ isConnected, setIsConnected ] = useState(false);
-
     const navItems = [
         { name: "Dashboard", path: "/dashboard" },
         /* { name: "Profile", path: "/profile" },
@@ -40,13 +37,6 @@ export function Header() {
 
                 <div className="flex items-center gap-4">
                     <ThemeToggle />
-                    {/* {isConnected ? (
-                        <div>Logged menu</div>
-                    ): (
-                        <button >
-                            <Link href="/dashboard">Get Started</Link>
-                        </button>
-                    )} */}
                 </div>
             </div>
             
