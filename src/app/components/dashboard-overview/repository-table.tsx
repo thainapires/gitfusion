@@ -3,15 +3,15 @@ import { RepositorySummary } from "../../types/mock-app";
 
 export function RepositoryTable({ repositories }: { repositories: RepositorySummary[] }) {
   return (
-    <section className="rounded-lg border border-gray-200 bg-card p-5 shadow-sm dark:border-gray-800">
+    <section className="min-w-0 rounded-lg border border-gray-200 bg-card p-4 shadow-sm dark:border-gray-800 sm:p-5">
       <h2 className="text-lg font-extrabold">Top repositories</h2>
       {!repositories.length ? (
         <div className="mt-4 rounded-md border border-gray-200 bg-background p-4 text-sm leading-6 text-muted-foreground dark:border-gray-800">
           No repositories were returned by the connected providers yet.
         </div>
       ) : (
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[34rem] text-left text-sm">
+      <div className="mt-4 max-w-full overflow-x-auto">
+        <table className="w-full min-w-[30rem] text-left text-sm sm:min-w-[34rem]">
           <thead className="border-b border-gray-200 text-xs uppercase text-muted-foreground dark:border-gray-800">
             <tr>
               <th className="py-3 pr-4">Repository</th>
@@ -26,7 +26,7 @@ export function RepositoryTable({ repositories }: { repositories: RepositorySumm
               return (
                 <tr key={repo.name}>
                   <td className="py-4 pr-4">
-                    <div className="font-bold">{repo.name}</div>
+                    <div className="max-w-[13rem] truncate font-bold sm:max-w-none">{repo.name}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{repo.visibility}</div>
                   </td>
                   <td className="px-4 py-4">

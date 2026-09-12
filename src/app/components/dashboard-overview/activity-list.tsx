@@ -3,7 +3,7 @@ import { ActivityItem } from "../../types/mock-app";
 
 export function ActivityList({ activities }: { activities: ActivityItem[] }) {
   return (
-    <section className="rounded-lg border border-gray-200 bg-card p-5 shadow-sm dark:border-gray-800">
+    <section className="min-w-0 rounded-lg border border-gray-200 bg-card p-4 shadow-sm dark:border-gray-800 sm:p-5">
       <h2 className="text-lg font-extrabold">Recent activity</h2>
       <div className="mt-4 space-y-4">
         {!activities.length && (
@@ -23,7 +23,7 @@ export function ActivityList({ activities }: { activities: ActivityItem[] }) {
                   <h3 className="font-bold">{activity.title}</h3>
                   <time className="text-xs font-semibold text-muted-foreground">{activity.time}</time>
                 </div>
-                <p className="mt-1 truncate text-sm text-muted-foreground">{activity.description}</p>
+                <p className="mt-1 overflow-hidden text-ellipsis text-sm text-muted-foreground sm:truncate">{activity.description}</p>
               </div>
             </article>
           );

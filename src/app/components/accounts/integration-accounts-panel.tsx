@@ -7,9 +7,6 @@ import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/sup
 import { mockAccounts } from "../../mocks/accounts";
 import { AccountProvider, ConnectedAccount } from "../../types/mock-app";
 import { AccountConnectionCard } from "./account-connection-card";
-import { GrDashboard } from "react-icons/gr";
-import { PiPlugsBold, PiPlugsConnectedFill } from "react-icons/pi";
-import { FaGitSquare } from "react-icons/fa";
 import { TbLayoutDashboard } from "react-icons/tb";
 
 type ConnectedAccountResponse = {
@@ -151,14 +148,14 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
   const connectedCount = accounts.filter((account) => account.status === "connected").length;
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-gray-200 p-4 shadow-sm dark:border-gray-800 space-y-4 bg-card">
-        <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              <TbLayoutDashboard className="text-primary dark:text-primary-dark" size={26}/>
-              <h2 className="text-lg font-extrabold">Connected Accounts</h2>
+    <div className="min-w-0 space-y-4">
+      <div className="space-y-4 rounded-lg border border-gray-200 bg-card p-4 shadow-sm dark:border-gray-800">
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2">
+              <TbLayoutDashboard className="shrink-0 text-primary dark:text-primary-dark" size={24}/>
+              <h2 className="min-w-0 text-base font-extrabold sm:text-lg">Connected Accounts</h2>
             </div>
-            <h3 className="text-sm font-semibold text-muted-foreground">
+            <h3 className="shrink-0 text-sm font-semibold text-muted-foreground">
               {connectedCount}/{accounts.length} connected
             </h3>
         </div>

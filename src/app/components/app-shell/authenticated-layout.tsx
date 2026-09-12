@@ -78,15 +78,15 @@ export function AuthenticatedLayout({ title, description, children, actions }: A
         >
           <Sidebar collapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed((collapsed) => !collapsed)} />
         </aside>
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto ">
-            <header className="mb-6 flex flex-col gap-4 border-b border-gray-200 pb-5 dark:border-gray-800 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Dashboard</p>
-                <h1 className="mt-2 text-3xl font-extrabold tracking-normal">{title}</h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+        <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full min-w-0">
+            <header className="flex flex-col gap-4 pb-5 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Dashboard</p>
+                <h1 className="mt-1 text-2xl font-extrabold tracking-normal sm:text-3xl">{title}</h1>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
               </div>
-              <div className="flex items-center gap-3">{actions}<ThemeToggle /></div>
+              <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}<ThemeToggle /></div>
             </header>
             {children}
           </div>

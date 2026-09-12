@@ -16,7 +16,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
   const Icon = account.provider === "github" ? FaGithub : FaGitlab;
 
   return (
-    <article className="rounded-lg border border-gray-200 bg-background p-4 shadow-sm dark:border-gray-800">
+    <article className="min-w-0 rounded-lg border border-gray-200 bg-background p-4 shadow-sm dark:border-gray-800">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className={`grid size-11 shrink-0 place-items-center rounded-md ${account.provider === "github" ? "bg-slate-900 text-white" : "bg-orange-100 text-orange-600 dark:bg-orange-950/40"}`}>
@@ -30,7 +30,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() =>
@@ -39,7 +39,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
                 : onConnect(account.provider)
             }
             disabled={isConnecting}
-            className={`py-2 rounded-md px-3 text-sm font-extrabold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`w-full rounded-md px-3 py-2 text-sm font-extrabold text-white transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${
               isConnected
                 ? "bg-red-500 hover:bg-red-600"
                 : "bg-emerald-500 hover:bg-emerald-600"

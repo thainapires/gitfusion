@@ -32,9 +32,9 @@ export function ContributionChart({ data }: { data: DailyContribution[] }) {
   };
 
   return (
-    <section className="rounded-lg border border-gray-200 bg-card p-5 shadow-sm dark:border-gray-800">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+    <section className="min-w-0 rounded-lg border border-gray-200 bg-card p-4 shadow-sm dark:border-gray-800 sm:p-5">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-lg font-extrabold">Contribution graph</h2>
           <p className="mt-1 text-sm text-muted-foreground">Daily mocked activity across connected platforms.</p>
         </div>
@@ -44,8 +44,8 @@ export function ContributionChart({ data }: { data: DailyContribution[] }) {
         </div>
       </div>
 
-      <div className="gf-contribution-calendar mt-6 overflow-x-auto">
-        <div className="min-w-[42rem]">
+      <div className="gf-contribution-calendar mt-6 max-w-full overflow-x-auto">
+        <div className="min-w-[34rem] sm:min-w-[42rem]">
           <CalendarHeatmap
             startDate={startDate}
             endDate={endDate}

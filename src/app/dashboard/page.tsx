@@ -85,12 +85,10 @@ export default function DashboardPage() {
               activeDays={33}
               currentStreak={0}
             />
-
-            
           </div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-            <div className="space-y-6">
+          <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,24rem)]">
+            <div className="min-w-0 space-y-6">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {overview.metrics.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} />
@@ -99,10 +97,8 @@ export default function DashboardPage() {
               <ContributionChart data={overview.dailyContributions} />
               <RepositoryTable repositories={overview.topRepositories} />
             </div>
-            <div className="space-y-6">
+            <div className="min-w-0 space-y-6">
               <IntegrationAccountsPanel compact redirectTo="/dashboard" />
-              
-
               <ActivityList activities={overview.recentActivity} />
             </div>
           </div>
@@ -124,10 +120,10 @@ function DashboardLoading() {
 
 function EmptyConnectionsState() {
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <section className="rounded-lg border border-gray-200 bg-card p-6 shadow-sm dark:border-gray-800">
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,24rem)]">
+      <section className="min-w-0 rounded-lg border border-gray-200 bg-card p-5 shadow-sm dark:border-gray-800 sm:p-6">
         <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">No providers connected</p>
-        <h2 className="mt-3 text-2xl font-extrabold">Connect GitHub or GitLab to build your dashboard.</h2>
+        <h2 className="mt-3 text-xl font-extrabold sm:text-2xl">Connect GitHub or GitLab to build your dashboard.</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
           Once at least one provider is connected, Git Fusion will load repositories, daily activity, recent events, and overview metrics from that account.
         </p>
