@@ -19,16 +19,16 @@ export function LandingNavbar() {
 
       <nav className="flex items-center gap-4" aria-label="Primary navigation">
         <Link
-          href="/dashboard"
+          href="/sign-in"
           className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
         >
-          View product
+          Sign in
         </Link>
         <Link
-          href="/dashboard"
+          href="/sign-up"
           className="border border-emerald-300/40 bg-emerald-300 px-4 py-2 text-sm font-extrabold text-slate-950 transition hover:bg-emerald-200 sm:px-5"
         >
-          Start profile
+          Get started
         </Link>
       </nav>
     </header>

@@ -17,16 +17,16 @@ export function HeroContent() {
 
       <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
-          href="/dashboard"
+          href="/sign-up"
           className="inline-flex h-12 w-full items-center justify-center bg-emerald-300 px-7 text-sm font-extrabold text-slate-950 transition hover:bg-emerald-200 sm:w-auto"
         >
           Build my activity profile
         </Link>
         <Link
-          href="/dashboard"
+          href="/sign-in"
           className="inline-flex h-12 w-full items-center justify-center border border-slate-600 px-7 text-sm font-bold text-slate-200 transition hover:border-emerald-300/70 hover:text-white sm:w-auto"
         >
-          Open dashboard
+          Sign in
         </Link>
       </div>
     </div>

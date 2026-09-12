@@ -6,7 +6,7 @@ import { LandingNavbar } from "./landing-navbar";
 
 export function LandingPage() {
   return (
-    <main className="relative min-h-screen w-screen overflow-hidden bg-[#060d1c] text-white">
+    <main className="relative min-h-screen w-screen overflow-hidden bg-background text-white">
       <AuroraBackground
         className="pointer-events-none absolute left-1/2 inset-y-0 w-[calc(100vw+10rem)] -translate-x-1/2 opacity-36"
         colorStops={["#0f172a", "#4c1d95", "#064e3b"]}
