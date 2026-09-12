@@ -44,7 +44,7 @@ export function ContributionChart({ data }: { data: DailyContribution[] }) {
         </div>
       </div>
 
-      <div className="gf-contribution-calendar mt-6 overflow-x-auto pb-2">
+      <div className="gf-contribution-calendar mt-6 overflow-x-auto">
         <div className="min-w-[42rem]">
           <CalendarHeatmap
             startDate={startDate}
@@ -59,7 +59,7 @@ export function ContributionChart({ data }: { data: DailyContribution[] }) {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 text-xs font-bold text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-4 flex flex-col gap-3 text-xs font-medium text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p>Each square represents one day. Tooltip values are already split by platform.</p>
         <div className="flex items-center gap-2">
           <span>Less</span>

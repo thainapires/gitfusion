@@ -7,6 +7,10 @@ import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/sup
 import { mockAccounts } from "../../mocks/accounts";
 import { AccountProvider, ConnectedAccount } from "../../types/mock-app";
 import { AccountConnectionCard } from "./account-connection-card";
+import { GrDashboard } from "react-icons/gr";
+import { PiPlugsBold, PiPlugsConnectedFill } from "react-icons/pi";
+import { FaGitSquare } from "react-icons/fa";
+import { TbLayoutDashboard } from "react-icons/tb";
 
 type ConnectedAccountResponse = {
   provider: AccountProvider;
@@ -148,7 +152,16 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
+      <div className="rounded-lg border border-gray-200 p-4 shadow-sm dark:border-gray-800 space-y-4 bg-card">
+        <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              <TbLayoutDashboard className="text-primary dark:text-primary-dark" size={26}/>
+              <h2 className="text-lg font-extrabold">Connected Accounts</h2>
+            </div>
+            <h3 className="text-sm font-semibold text-muted-foreground">
+              {connectedCount}/{accounts.length} connected
+            </h3>
+        </div>
         {accounts.map((account) => (
           <AccountConnectionCard key={account.provider} account={account} onConnect={connectAccount} onDisconnect={disconnectAccount} compact={compact} />
         ))}

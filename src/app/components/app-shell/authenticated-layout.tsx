@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { FaCodeMerge } from "react-icons/fa6";
-import { FiAward, FiBarChart2, FiGitPullRequest, FiGrid, FiLogOut, FiMenu, FiSettings, FiX } from "react-icons/fi";
+import { FiAward, FiBarChart2, FiChevronLeft, FiChevronRight, FiGitPullRequest, FiGrid, FiLogOut, FiMenu, FiSettings, FiX } from "react-icons/fi";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
 import { mockUser } from "../../mocks/user";
 import { SidebarItem } from "../../types/mock-app";
@@ -30,6 +30,7 @@ type AuthenticatedLayoutProps = {
 export function AuthenticatedLayout({ title, description, children, actions }: AuthenticatedLayoutProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(isSupabaseConfigured());
 
   useEffect(() => {
@@ -72,14 +73,16 @@ export function AuthenticatedLayout({ title, description, children, actions }: A
       </div>
 
       <div className="flex w-full">
-        <aside className="sticky left-0 top-0 hidden h-screen w-72 shrink-0 border-r border-gray-200 bg-card dark:border-gray-800 lg:block">
-          <Sidebar />
+        <aside
+          className={`sticky left-0 top-0 hidden h-screen shrink-0 border-r border-gray-200 bg-card transition-[width] duration-200 dark:border-gray-800 lg:block ${isSidebarCollapsed ? "w-20" : "w-62"}`}
+        >
+          <Sidebar collapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed((collapsed) => !collapsed)} />
         </aside>
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto ">
             <header className="mb-6 flex flex-col gap-4 border-b border-gray-200 pb-5 dark:border-gray-800 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Git Fusion</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Dashboard</p>
                 <h1 className="mt-2 text-3xl font-extrabold tracking-normal">{title}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
               </div>
@@ -112,7 +115,7 @@ function MobileTopbar({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNavigate?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [displayName, setDisplayName] = useState(mockUser.name);
@@ -166,23 +169,27 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center justify-between border-b border-gray-200 px-5 dark:border-gray-800">
-        <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3 font-extrabold">
+      <div className={`flex h-16 items-center border-b border-gray-200 dark:border-gray-800 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
+        <Link href="/dashboard" onClick={onNavigate} className={`flex items-center font-extrabold ${collapsed ? "justify-center" : "gap-3"}`} aria-label="Git Fusion dashboard" title={collapsed ? "Git Fusion" : undefined}>
           <FaCodeMerge className="size-6 text-primary" aria-hidden />
-          Git Fusion
+          {!collapsed && "Git Fusion"}
         </Link>
-        {onNavigate && (
+        {onNavigate ? (
           <button type="button" className="grid size-9 place-items-center rounded-md text-muted-foreground" onClick={onNavigate} aria-label="Close navigation">
             <FiX className="size-5" aria-hidden />
           </button>
-        )}
+        ) : onToggleCollapse ? (
+          <button type="button" className="grid size-8 place-items-center rounded-md text-muted-foreground transition hover:bg-gray-100 hover:text-foreground dark:hover:bg-gray-800" onClick={onToggleCollapse} aria-label={collapsed ? "Expand navigation" : "Collapse navigation"} title={collapsed ? "Expand navigation" : "Collapse navigation"}>
+            {collapsed ? <FiChevronRight className="size-4" aria-hidden /> : <FiChevronLeft className="size-4" aria-hidden />}
+          </button>
+        ) : null}
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Dashboard navigation">
+      <nav className={`flex-1 space-y-1 py-4 ${collapsed ? "px-2" : "px-3"}`} aria-label="Dashboard navigation">
         {sidebarItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.href === pathname;
-          const classes = `flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold transition ${
+          const classes = `flex w-full items-center rounded-md py-2.5 text-sm font-bold transition ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${
             isActive
               ? "bg-primary text-white"
               : item.disabled
@@ -193,49 +200,71 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           if (!item.href || item.disabled) {
             return (
               <button key={item.label} type="button" className={classes} disabled title="Coming soon">
-                <Icon className="size-4" aria-hidden />
-                {item.label}
-                <span className="ml-auto text-[0.65rem] font-extrabold uppercase">Soon</span>
+                <Icon className={`shrink-0 ${collapsed ? "size-6" : "size-4"}`} aria-hidden />
+                {!collapsed && item.label}
+                {!collapsed && <span className="ml-auto text-[0.65rem] font-extrabold uppercase">Soon</span>}
               </button>
             );
           }
 
           return (
             <Link key={item.href} href={item.href} onClick={onNavigate} className={classes}>
-              <Icon className="size-4" aria-hidden />
-              {item.label}
+              <Icon className={`shrink-0 ${collapsed ? "size-6" : "size-4"}`} strokeWidth={2} aria-hidden />
+              {!collapsed && item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="space-y-3 border-t border-gray-200 p-4 dark:border-gray-800">
-        <div className="flex items-center gap-3 rounded-md bg-background p-3">
-          <Avatar size="sm" className="size-8 shrink-0 overflow-hidden rounded-full">
-            <Avatar.Image src={displayAvatarUrl || undefined} alt={displayName} />
-            <Avatar.Fallback>
+      <div
+        className={`space-y-3 border-t border-gray-200 dark:border-gray-800 ${
+          collapsed ? "p-2" : "p-4"
+        }`}
+      >
+        <div
+          className={`flex items-center rounded-md ${
+            collapsed
+              ? "justify-center p-2"
+              : "gap-3 bg-background p-3"
+          }`}
+        >
+          <Avatar className="size-8 shrink-0 overflow-hidden rounded-full">
+            <Avatar.Image
+              src={displayAvatarUrl || undefined}
+              alt={displayName}
+              className="size-full object-cover"
+            />
+
+            <Avatar.Fallback className="flex size-full items-center justify-center">
               {getInitials(displayName)}
             </Avatar.Fallback>
           </Avatar>
 
-          <div className="min-w-0">
-            <div className="truncate text-sm font-extrabold">
-              {displayName}
-            </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <div className="truncate text-sm font-extrabold">
+                {displayName}
+              </div>
 
-            <div className="mt-1 truncate text-xs text-muted-foreground">
-              {displayUsername}
+              <div className="mt-1 truncate text-xs text-muted-foreground">
+                {displayUsername}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm font-extrabold text-muted-foreground transition hover:border-primary hover:text-primary dark:border-gray-800"
+          className={`flex w-full items-center justify-center rounded-md border border-gray-200 py-2 text-sm font-extrabold text-muted-foreground transition hover:border-primary hover:text-primary dark:border-gray-800 ${
+            collapsed ? "px-2" : "gap-2 px-3"
+          }`}
+          aria-label="Sign out"
+          title={collapsed ? "Sign out" : undefined}
         >
           <FiLogOut className="size-4" aria-hidden />
-          Sign out
+
+          {!collapsed && "Sign out"}
         </button>
       </div>
     </div>

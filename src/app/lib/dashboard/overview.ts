@@ -261,7 +261,6 @@ function buildMetrics({ total, githubTotal, gitlabTotal, repositories, pullOrMer
     { label: "Total contributions", value: total.toLocaleString("en-US"), helper: `GitHub ${githubTotal.toLocaleString("en-US")} · GitLab ${gitlabTotal.toLocaleString("en-US")}`, trend: `${activeDays} active days` },
     { label: "Repositories", value: repositories.toLocaleString("en-US"), helper: "Connected provider repositories", trend: repositories ? "Loaded from providers" : "No repositories yet" },
     { label: "Pull / merge requests", value: pullOrMergeRequests.toLocaleString("en-US"), helper: "Detected from provider APIs", trend: "Last year window" },
-    { label: "Current streak", value: `${currentStreak} days`, helper: "Based on daily activity", trend: currentStreak ? "Still active" : "No current streak" },
   ];
 }
 

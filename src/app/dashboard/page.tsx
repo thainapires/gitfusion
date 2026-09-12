@@ -12,6 +12,7 @@ import { notify } from "../lib/notifications/toast";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../lib/supabase/client";
 import { mockUser } from "../mocks/user";
 import { DashboardOverview } from "../types/dashboard";
+import { KeepGoingCard } from "../components/dashboard-overview/keep-going-card";
 
 export default function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
@@ -79,19 +80,29 @@ export default function DashboardPage() {
 
       {!isLoading && overview?.hasConnections && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {overview.metrics.map((metric) => (
-              <MetricCard key={metric.label} metric={metric} />
-            ))}
+          <div className="space-y-5">
+            <KeepGoingCard
+              activeDays={33}
+              currentStreak={0}
+            />
+
+            
           </div>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
             <div className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {overview.metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} />
+                ))}
+              </div>
               <ContributionChart data={overview.dailyContributions} />
               <RepositoryTable repositories={overview.topRepositories} />
             </div>
             <div className="space-y-6">
               <IntegrationAccountsPanel compact redirectTo="/dashboard" />
+              
+
               <ActivityList activities={overview.recentActivity} />
             </div>
           </div>

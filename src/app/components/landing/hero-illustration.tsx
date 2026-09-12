@@ -71,7 +71,7 @@ export function HeroIllustration() {
             <section className="min-w-0 p-6">
               <header className="mb-4 flex items-end justify-between border-b border-slate-800 pb-4">
                 <div>
-                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">Git Fusion</p>
+                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">Dashboard</p>
                   <h2 className="mt-1 text-2xl font-extrabold tracking-normal">Good to see you again, Thainá</h2>
                   <p className="mt-1 text-xs font-medium text-slate-400">Connected GitHub and GitLab activity overview.</p>
                 </div>

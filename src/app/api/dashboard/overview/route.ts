@@ -11,6 +11,7 @@ type ConnectedAccountRow = {
 };
 
 const cacheTtlMs = 24 * 60 * 60 * 1000;
+const cacheSchemaVersion = "overview-v2";
 
 export async function GET(request: NextRequest) {
   if (!isSupabaseServerConfigured()) {
@@ -84,11 +85,13 @@ export async function GET(request: NextRequest) {
 
 function buildCacheKey(accounts: ConnectedAccountRow[]) {
   if (!accounts.length) {
-    return "no-connections";
+    return `:no-connections`;
   }
 
-  return accounts
-    .map((account) => `${account.provider}:${account.provider_user_id}:${account.updated_at || ""}`)
+  const accountsKey = accounts
+    .map((account) => `::`)
     .sort()
     .join("|");
+
+  return `:`;
 }
