@@ -1,56 +1,18 @@
-import { IconType } from "react-icons";
-import {
-  FiActivity,
-  FiGitMerge,
-  FiGithub,
-  FiLayers,
-} from "react-icons/fi";
-
-const highlights: Array<{
-  title: string;
-  description: string;
-  Icon: IconType;
-}> = [
-  {
-    title: "GitHub + GitLab",
-    description: "All contributions together",
-    Icon: FiGitMerge,
-  },
-  {
-    title: "Unified analytics",
-    description: "One view for your activity",
-    Icon: FiActivity,
-  },
-  {
-    title: "Developer insights",
-    description: "Patterns, streaks and progress",
-    Icon: FiLayers,
-  },
-  {
-    title: "Open source",
-    description: "Free and built for developers",
-    Icon: FiGithub,
-  },
+const productPillars = [
+  { label: "Collect", value: "GitHub, GitLab and repository activity" },
+  { label: "Understand", value: "Trends, streaks, languages and comparisons" },
+  { label: "Share", value: "Public dashboard, README card and achievements" },
 ];
 
 export function HeroHighlights() {
   return (
-    <div className="grid w-full grid-cols-1 gap-6 pt-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10 lg:pt-12">
-      {highlights.map(({ title, description, Icon }) => (
-        <div key={title} className="group flex items-start gap-4">
-          <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-violet-300 transition duration-300 group-hover:bg-violet-500/15 group-hover:text-violet-200">
-            <Icon className="size-6" aria-hidden />
+    <div className="grid w-full border-y border-slate-700/50 text-sm text-slate-300 sm:grid-cols-3">
+      {productPillars.map((pillar) => (
+        <div key={pillar.label} className="border-slate-700/50 py-4 sm:border-r sm:px-6 sm:last:border-r-0 lg:px-8">
+          <div className="font-mono text-[0.68rem] font-bold uppercase tracking-[0.2em] text-emerald-300/70">
+            {pillar.label}
           </div>
-
-          <div>
-            <p className="text-base font-bold text-slate-100">
-              {title}
-            </p>
-
-            <p className="mt-1.5 max-w-[15rem] text-sm leading-6 text-slate-400">
-              {description}
-            </p>
-          </div>
+          <div className="mt-1 max-w-[18rem] font-bold leading-6 text-slate-100">{pillar.value}</div>
         </div>
       ))}
     </div>
