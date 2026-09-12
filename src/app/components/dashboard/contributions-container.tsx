@@ -1,13 +1,17 @@
 "use client";
 
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { IoArrowBack } from "react-icons/io5";
+import { useMemo, useState, useEffect } from "react";
+import { FaGithub, FaGitlab } from "react-icons/fa";
+import { IoArrowBack, IoCopyOutline } from "react-icons/io5";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Contributions } from "../../types/contributions";
+import { toast } from "sonner";
+import { ContributionFilters, ContributionPeriod, ContributionPlatform, Contributions } from "../../types/contributions";
+import { applyContributionFilters, buildContributionSummary, getPlatformLabel } from "../../utils/contributions";
 import ContributionsGraph from "./contributions-graph";
 import ProfilePicture from "./profile-picture";
+
 interface ContributionsContainerProps {
     contributions: Contributions;
     totalContributionsCount: number | null;
@@ -15,11 +19,32 @@ interface ContributionsContainerProps {
     gitlabUsername: string
     setContributions: React.Dispatch<React.SetStateAction<Contributions | null>>
     closeButton?: boolean,
+    onClose?: () => void,
 }
 
-export default function ContributionsContainer({contributions, setContributions, closeButton = true, totalContributionsCount, githubUsername, gitlabUsername}: ContributionsContainerProps) {
+const platformOptions: { value: ContributionPlatform; label: string }[] = [
+    { value: "combined", label: "Combined" },
+    { value: "github", label: "GitHub" },
+    { value: "gitlab", label: "GitLab" },
+];
+
+const periodOptions: { value: ContributionPeriod; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "30d", label: "30 days" },
+    { value: "90d", label: "90 days" },
+    { value: "year", label: "This year" },
+    { value: "last-year", label: "Last year" },
+    { value: "custom", label: "Custom" },
+];
+
+export default function ContributionsContainer({contributions, setContributions, closeButton = true, totalContributionsCount, githubUsername, gitlabUsername, onClose: handleClose}: ContributionsContainerProps) {
     const [profilePictureUrl, setProfilePictureUrl] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(true)
+    const [filters, setFilters] = useState<ContributionFilters>({ platform: "combined", period: "all" })
+
+    const filteredContributions = useMemo(() => applyContributionFilters(contributions, filters), [contributions, filters]);
+    const summary = useMemo(() => buildContributionSummary(filteredContributions, filters.platform), [filteredContributions, filters.platform]);
+    const readmeUrl = `/api/contributions-readme?github_username=${encodeURIComponent(githubUsername)}&gitlab_username=${encodeURIComponent(gitlabUsername)}&platform=${filters.platform}&period=${filters.period}${filters.from ? `&from=${filters.from}` : ""}${filters.to ? `&to=${filters.to}` : ""}`;
 
     useEffect(() => {
         const getGithubProfilePicture = async () => {
@@ -39,23 +64,45 @@ export default function ContributionsContainer({contributions, setContributions,
     }, [githubUsername])
 
     const onClose = () => {
+        if (handleClose) {
+            handleClose();
+            return;
+        }
+
         setContributions(null)
-    } 
+    }
+
+    const updateFilter = (nextFilters: Partial<ContributionFilters>) => {
+        setFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }));
+    };
+
+    const copyShareUrl = async () => {
+        const url = `${window.location.origin}/dashboard?github=${encodeURIComponent(githubUsername)}&gitlab=${encodeURIComponent(gitlabUsername)}`;
+        await navigator.clipboard.writeText(url);
+        toast.success("Dashboard URL copied");
+    };
+
+    const copyReadmeMarkdown = async () => {
+        const url = `${window.location.origin}${readmeUrl}`;
+        await navigator.clipboard.writeText(`![Git Fusion contributions](${url})`);
+        toast.success("README markdown copied");
+    };
 
     return (
-        <div className="w-full max-w-7xl flex flex-col h-full items-center justify-center p-4 sm:p-6  mx-auto">
+        <div className="w-full max-w-7xl flex flex-col h-full items-center p-4 sm:p-6 mx-auto overflow-y-auto">
             { closeButton && (
                 <button 
                     onClick={onClose}
-                    className="flex justify-center items-center p-2 m-2 text-gray-700 dark:text-gray-400 hover:text-primary hover:dark:text-white hover:dark:bg-gray-800 rounded-full cursor-pointer"
+                    className="self-start flex justify-center items-center gap-2 p-2 m-2 text-gray-700 dark:text-gray-400 hover:text-primary hover:dark:text-white hover:dark:bg-gray-800 rounded-full cursor-pointer"
                     aria-label="Close"
                  >
                     <IoArrowBack className="w-5 h-5"/> 
                     Voltar
                 </button>
             )}
-            <div className="flex flex-col items-center w-full">
-                <div className="relative w-20 h-20 sm:w-45 sm:h-45 mb-6">
+
+            <div className="flex flex-col items-center w-full gap-5">
+                <div className="relative w-20 h-20 sm:w-32 sm:h-32">
                     {loading ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-gray-700 rounded-full">
                             <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -64,57 +111,138 @@ export default function ContributionsContainer({contributions, setContributions,
                             </svg>
                         </div>
                     ) : (
-                        <ProfilePicture
-                            profilePictureUrl={profilePictureUrl}
-                        />
+                        <ProfilePicture profilePictureUrl={profilePictureUrl} />
                     )}
                 </div>
 
-                <div className="space-y-6 w-full mb-4">
-                    <div className="flex flex-wrap justify-center gap-4">
-                        <a 
-                            href={`https://github.com/${githubUsername}`} 
-                            target="_blank" 
-                            className="flex items-center px-4 py-2 bg-primary rounded-lg hover:bg-[#1d232f] transition-colors"
-                        >
-                            <svg className="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                            </svg>
-                            <span className="ml-2 font-medium text-white">{githubUsername}</span>
-                        </a>
-                        <a 
-                            href={`https://gitlab.com/${gitlabUsername}`} 
-                            target="_blank" 
-                            className="flex items-center px-4 py-2 bg-primary rounded-lg hover:bg-[#1d232f] transition-colors"
-                        >
-                            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z"/>
-                            </svg>
-                            <span className="ml-2 font-medium text-white">{gitlabUsername}</span>
-                        </a>
-                    </div>
+                <div className="flex flex-wrap justify-center gap-3">
+                    <a href={`https://github.com/${githubUsername}`} target="_blank" className="flex items-center px-4 py-2 bg-card border border-gray-200 dark:border-gray-700 rounded-md hover:border-primary transition-colors">
+                        <FaGithub className="w-5 h-5" />
+                        <span className="ml-2 font-medium">{githubUsername}</span>
+                    </a>
+                    <a href={`https://gitlab.com/${gitlabUsername}`} target="_blank" className="flex items-center px-4 py-2 bg-card border border-gray-200 dark:border-gray-700 rounded-md hover:border-primary transition-colors">
+                        <FaGitlab className="w-5 h-5" />
+                        <span className="ml-2 font-medium">{gitlabUsername}</span>
+                    </a>
                 </div>
-
-                <div className="rounded-xl p-4 sm:p-6 backdrop-blur-sm w-full">
-                    <div className="text-center">
-                        {totalContributionsCount === 0 ? (
-                            <Skeleton width={80} height={35} baseColor="#1A202C" highlightColor="#2D3748"/>
-                        ): (
-                            <div className="text-3xl sm:text-4xl font-bold mb-1">{totalContributionsCount}</div>
-                        )}
-                        <div className="text-sm font-medium uppercase tracking-wide">Total Contributions</div>
-                    </div>
-                </div>
-                
             </div>
 
-            <div className="w-full p-2 sm:p-4">
-                {contributions.length ? (
-                    <ContributionsGraph contributions={contributions} />
-                ) : (
-                    <Skeleton className="w-full h-10 md:h-20 lg:h-24" baseColor="#1A202C" highlightColor="#2D3748"/>
-                )}
+            <div className="w-full grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4 mt-6">
+                <div className="space-y-4">
+                    <div className="bg-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
+                        <div className="flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between">
+                            <div className="space-y-2">
+                                <div className="text-sm font-semibold text-muted-foreground">Platform</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {platformOptions.map((option) => (
+                                        <button key={option.value} type="button" onClick={() => updateFilter({ platform: option.value })} className={`px-3 py-2 rounded-md text-sm border transition-colors ${filters.platform === option.value ? "bg-primary text-white border-primary" : "border-gray-200 dark:border-gray-700 hover:border-primary"}`}>
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="text-sm font-semibold text-muted-foreground">Period</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {periodOptions.map((option) => (
+                                        <button key={option.value} type="button" onClick={() => updateFilter({ period: option.value })} className={`px-3 py-2 rounded-md text-sm border transition-colors ${filters.period === option.value ? "bg-primary text-white border-primary" : "border-gray-200 dark:border-gray-700 hover:border-primary"}`}>
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {filters.period === "custom" && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    From
+                                    <input type="date" value={filters.from || ""} onChange={(event) => updateFilter({ from: event.target.value })} className="mt-1 block w-full rounded-md bg-background border border-gray-200 dark:border-gray-700 px-3 py-2 text-foreground" />
+                                </label>
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    To
+                                    <input type="date" value={filters.to || ""} onChange={(event) => updateFilter({ to: event.target.value })} className="mt-1 block w-full rounded-md bg-background border border-gray-200 dark:border-gray-700 px-3 py-2 text-foreground" />
+                                </label>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-5">
+                        {filteredContributions.length ? (
+                            <ContributionsGraph contributions={filteredContributions} platform={filters.platform} />
+                        ) : (
+                            <div className="h-32 flex items-center justify-center text-sm text-muted-foreground">No contributions for this filter</div>
+                        )}
+                    </div>
+                </div>
+
+                <aside className="space-y-4">
+                    <div className="bg-card border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <div className="text-sm font-semibold text-muted-foreground">{getPlatformLabel(filters.platform)} total</div>
+                        {totalContributionsCount === null ? (
+                            <Skeleton width={80} height={35} baseColor="#1A202C" highlightColor="#2D3748"/>
+                        ) : (
+                            <div className="text-4xl font-bold mt-1">{summary.total}</div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <Metric label="GitHub" value={summary.githubTotal} />
+                        <Metric label="GitLab" value={summary.gitlabTotal} />
+                        <Metric label="Active days" value={summary.activeDays} />
+                        <Metric label="Avg/week" value={summary.averagePerWeek} />
+                        <Metric label="Best streak" value={summary.longestStreak} />
+                        <Metric label="Current streak" value={summary.currentStreak} />
+                    </div>
+
+                    <div className="bg-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+                        <div className="text-sm font-semibold text-muted-foreground">Platform split</div>
+                        <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800 flex">
+                            <div className="bg-[#24292f]" style={{ width: `${summary.githubShare}%` }} />
+                            <div className="bg-[#fc6d26]" style={{ width: `${summary.gitlabShare}%` }} />
+                        </div>
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>GitHub {summary.githubShare}%</span>
+                            <span>GitLab {summary.gitlabShare}%</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+                        <ComparisonRow label="Best week" value={`${summary.bestWeek.count} · ${summary.bestWeek.label}`} />
+                        <ComparisonRow label="Best month" value={`${summary.bestMonth.count} · ${summary.bestMonth.label}`} />
+                    </div>
+
+                    <div className="bg-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+                        <button type="button" onClick={copyShareUrl} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary-dark">
+                            <IoCopyOutline className="w-4 h-4" />
+                            Copy dashboard URL
+                        </button>
+                        <button type="button" onClick={copyReadmeMarkdown} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 text-sm font-semibold hover:border-primary">
+                            <IoCopyOutline className="w-4 h-4" />
+                            Copy README card
+                        </button>
+                    </div>
+                </aside>
             </div>
         </div>
     )
+}
+
+function Metric({ label, value }: { label: string; value: number | string }) {
+    return (
+        <div className="bg-card border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <div className="text-xs font-semibold text-muted-foreground uppercase">{label}</div>
+            <div className="text-xl font-bold mt-1">{value}</div>
+        </div>
+    );
+}
+
+function ComparisonRow({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="font-semibold text-muted-foreground">{label}</span>
+            <span className="text-right font-medium">{value}</span>
+        </div>
+    );
 }

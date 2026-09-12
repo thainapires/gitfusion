@@ -1,14 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
 import { FaGitlab } from "react-icons/fa6";
 import { IoIosWarning } from "react-icons/io";
 import { Tooltip } from 'react-tooltip';
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { z } from "zod";
 import { ContributionsResponse } from "../../types/contributions";
+
+const recentProfilesKey = "gitfusion:recent-profiles";
 
 const FormData = z.object({
     github_username: z.string().trim().min(1, "GitHub username is required"),
@@ -17,18 +20,48 @@ const FormData = z.object({
 
 type FormData = z.infer<typeof FormData>
 
-export type UsernameData = {
-    githubUsername: string,
-    gitlabUsername: string
-}
+type RecentProfile = {
+    githubUsername: string;
+    gitlabUsername: string;
+};
+
+export type UsernameData = RecentProfile;
+
 interface UserInformationFormProps {
-    onContributionsFetch: (contributionsData: ContributionsResponse, usernameData: UsernameData) => void
+    onContributionsFetch: (contributionsData: ContributionsResponse, usernameData: UsernameData) => void;
+    initialGithubUsername?: string;
+    initialGitlabUsername?: string;
+    isLoading?: boolean;
 }
 
-export default function UserInformationForm({onContributionsFetch}: UserInformationFormProps) {
-    const { register, handleSubmit, formState: { isSubmitting } } = useForm<FormData>({
+export default function UserInformationForm({onContributionsFetch, initialGithubUsername = "", initialGitlabUsername = "", isLoading = false}: UserInformationFormProps) {
+    const [recentProfiles, setRecentProfiles] = useState<RecentProfile[]>([]);
+    const { register, handleSubmit, formState: { isSubmitting }, reset } = useForm<FormData>({
         resolver: zodResolver(FormData),
+        defaultValues: {
+            github_username: initialGithubUsername,
+            gitlab_username: initialGitlabUsername,
+        },
     })
+
+    useEffect(() => {
+        reset({
+            github_username: initialGithubUsername,
+            gitlab_username: initialGitlabUsername,
+        });
+    }, [initialGithubUsername, initialGitlabUsername, reset]);
+
+    useEffect(() => {
+        const savedProfiles = window.localStorage.getItem(recentProfilesKey);
+        if (!savedProfiles) return;
+
+        try {
+            const parsedProfiles = JSON.parse(savedProfiles) as RecentProfile[];
+            setRecentProfiles(parsedProfiles.slice(0, 5));
+        } catch {
+            window.localStorage.removeItem(recentProfilesKey);
+        }
+    }, []);
 
     const fetchContributions = async (data: FormData) => {
         try {
@@ -42,14 +75,36 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                 throw new Error(result.error || "Unknown error occurred while fetching contributions.");
             }
 
-            onContributionsFetch(result, {
+            const usernameData = {
                 githubUsername: data.github_username,
                 gitlabUsername: data.gitlab_username
-            })
+            };
+
+            saveRecentProfile(usernameData);
+            onContributionsFetch(result, usernameData)
 
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
         }
+    };
+
+    const saveRecentProfile = (profile: RecentProfile) => {
+        const nextProfiles = [
+            profile,
+            ...recentProfiles.filter((recentProfile) => (
+                recentProfile.githubUsername !== profile.githubUsername || recentProfile.gitlabUsername !== profile.gitlabUsername
+            )),
+        ].slice(0, 5);
+
+        setRecentProfiles(nextProfiles);
+        window.localStorage.setItem(recentProfilesKey, JSON.stringify(nextProfiles));
+    };
+
+    const selectRecentProfile = (profile: RecentProfile) => {
+        reset({
+            github_username: profile.githubUsername,
+            gitlab_username: profile.gitlabUsername,
+        });
     };
 
     const onError = (errors: FieldErrors<FormData>) => {
@@ -59,6 +114,8 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
             }
         });
     };
+
+    const isButtonLoading = isSubmitting || isLoading;
 
     return (
         <div className="flex justify-center h-full items-center p-6 sm:p-8">
@@ -106,12 +163,30 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                     </div>
                 </div>
 
+                {recentProfiles.length > 0 && (
+                    <div className="space-y-2">
+                        <div className="text-sm font-semibold text-muted-foreground">Recent profiles</div>
+                        <div className="flex flex-wrap gap-2">
+                            {recentProfiles.map((profile) => (
+                                <button
+                                    type="button"
+                                    key={`${profile.githubUsername}-${profile.gitlabUsername}`}
+                                    onClick={() => selectRecentProfile(profile)}
+                                    className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 text-sm hover:border-primary"
+                                >
+                                    {profile.githubUsername} / {profile.gitlabUsername}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <button 
                     type="submit"
                     className="w-full flex justify-center cursor-pointer py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold bg-primary hover:bg-violet-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isSubmitting}
+                    disabled={isButtonLoading}
                 >
-                    {isSubmitting ? (
+                    {isButtonLoading ? (
                         <>
                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -123,7 +198,6 @@ export default function UserInformationForm({onContributionsFetch}: UserInformat
                         <>Generate contributions graph</>
                     )}
                 </button>
-                <Toaster richColors/>
             </form>
         </div>
     )

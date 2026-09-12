@@ -1,6 +1,11 @@
 import axios from 'axios';
 import { NextResponse } from 'next/server';
-import { Contribution } from '@/app/types/contributions';
+import { Contribution, ContributionTotals } from '@/app/types/contributions';
+
+type SourceContribution = {
+  date: string;
+  count: number;
+};
 
 type GitHubContributionDay = {
   contributionCount: number;
@@ -70,24 +75,21 @@ export async function GET(req: Request) {
     }
 
     const contributions = mergeContributions(githubResponse, gitlabResponse)
-
-    const totalContributionsCount = contributions.reduce((sum, c) => {
-      return sum + c.count
-    }, 0)
+    const totals = getContributionTotals(contributions)
 
     return new NextResponse(
-      JSON.stringify({ data: { totalContributionsCount, contributions } }), 
+      JSON.stringify({ data: { totalContributionsCount: totals.total, totals, contributions } }), 
       { status: 200 }
     )
 
   } catch (error) {
-    console.error("🚨 Unexpected Error 🚨", {
+    console.error("Unexpected Error", {
       endpoint: "GET /api/contributions",
       message: error instanceof Error ? error.message : "Unknown error occurred",
       location: "GET function in contributions API",
       timestamp: new Date().toISOString(),
       possibleCause: "Possibly an issue with fetching GitHub/GitLab data or a server error",
-      stacktTrace: error instanceof Error ? error.stack : "No stack trace available",
+      stackTrace: error instanceof Error ? error.stack : "No stack trace available",
     });
     return new NextResponse(
       JSON.stringify({ error: "An unexpected error ocurred. Please try again later."}),
@@ -96,7 +98,7 @@ export async function GET(req: Request) {
   }
 }
 
-async function getGithubContributionsData(githubUsername: string): Promise<Contribution[] | { error: string }> {
+async function getGithubContributionsData(githubUsername: string): Promise<SourceContribution[] | { error: string }> {
   try{
     const githubToken = process.env.GITHUB_PERSONAL_TOKEN;
 
@@ -153,7 +155,7 @@ async function getGithubContributionsData(githubUsername: string): Promise<Contr
 
     const weeks = responseData.data?.user?.contributionsCollection?.contributionCalendar?.weeks || [];
 
-    const githubData: Contribution[] = weeks.flatMap((week) =>
+    const githubData: SourceContribution[] = weeks.flatMap((week) =>
       week.contributionDays.map((day) => ({
         date: day.date,
         count: day.contributionCount,
@@ -162,7 +164,7 @@ async function getGithubContributionsData(githubUsername: string): Promise<Contr
 
     return githubData
   } catch(error) {
-    console.error("🚨 Unexpected Error in GitHub Data Fetching 🚨", {
+    console.error("Unexpected Error in GitHub Data Fetching", {
       endpoint: "POST https://api.github.com/graphql",
       message: error instanceof Error ? error.message : "Unknown error occurred",
       location: "getGithubContributionsData function",
@@ -174,7 +176,7 @@ async function getGithubContributionsData(githubUsername: string): Promise<Contr
   }
 }
 
-async function getGitlabContributionsData(gitlabUsername: string): Promise<Contribution[] | { error: string }> {
+async function getGitlabContributionsData(gitlabUsername: string): Promise<SourceContribution[] | { error: string }> {
   try{
     const response = await axios.get<GitLabCalendarResponse>(
       `https://gitlab.com/users/${encodeURIComponent(gitlabUsername)}/calendar.json`
@@ -184,7 +186,7 @@ async function getGitlabContributionsData(gitlabUsername: string): Promise<Contr
       return {error: "Failed to fetch data from Gitlab"}
     }
 
-    const gitlabData: Contribution[] = Object.entries(response.data).map(([key, value]) => ({
+    const gitlabData: SourceContribution[] = Object.entries(response.data).map(([key, value]) => ({
       date: key,
       count: Number(value)
     }));
@@ -192,7 +194,7 @@ async function getGitlabContributionsData(gitlabUsername: string): Promise<Contr
     return gitlabData
 
   } catch(error) {
-    console.error("🚨 Unexpected Error in Gitlab Data Fetching 🚨", {
+    console.error("Unexpected Error in Gitlab Data Fetching", {
       endpoint: "GET https://gitlab.com/users/${gitlabUsername}/calendar.json",
       message: error instanceof Error ? error.message : "Unknown error occurred",
       location: "getGitlabContributionsData function",
@@ -204,13 +206,44 @@ async function getGitlabContributionsData(gitlabUsername: string): Promise<Contr
   }
 }
 
-function mergeContributions(...sources: Contribution[][]): Contribution[] {
-  const contributionsByDate = new Map<string, number>();
+function mergeContributions(githubContributions: SourceContribution[], gitlabContributions: SourceContribution[]): Contribution[] {
+  const contributionsByDate = new Map<string, Contribution>();
 
-  sources.flat().forEach(({ date, count }) => {
-    contributionsByDate.set(date, (contributionsByDate.get(date) || 0) + count);
+  githubContributions.forEach(({ date, count }) => {
+    const contribution = getEmptyContribution(date, contributionsByDate);
+    contribution.githubCount += count;
+    contribution.count += count;
   });
 
-  return Array.from(contributionsByDate, ([date, count]) => ({ date, count }))
+  gitlabContributions.forEach(({ date, count }) => {
+    const contribution = getEmptyContribution(date, contributionsByDate);
+    contribution.gitlabCount += count;
+    contribution.count += count;
+  });
+
+  return Array.from(contributionsByDate.values())
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function getEmptyContribution(date: string, contributionsByDate: Map<string, Contribution>) {
+  const existingContribution = contributionsByDate.get(date);
+
+  if (existingContribution) {
+    return existingContribution;
+  }
+
+  const contribution = { date, count: 0, githubCount: 0, gitlabCount: 0 };
+  contributionsByDate.set(date, contribution);
+  return contribution;
+}
+
+function getContributionTotals(contributions: Contribution[]): ContributionTotals {
+  return contributions.reduce(
+    (totals, contribution) => ({
+      github: totals.github + contribution.githubCount,
+      gitlab: totals.gitlab + contribution.gitlabCount,
+      total: totals.total + contribution.count,
+    }),
+    { github: 0, gitlab: 0, total: 0 },
+  );
 }

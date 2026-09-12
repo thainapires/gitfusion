@@ -16,6 +16,7 @@ export default function ProfilePicture({profilePictureUrl}: ProfilePictureProps)
                     className="rounded-full border-4 border-primary p-1" 
                     width={192}
                     height={192}
+                    priority
                 />
             ) : (
                 <Image
@@ -24,6 +25,7 @@ export default function ProfilePicture({profilePictureUrl}: ProfilePictureProps)
                     className="rounded-full border-4 border-primary p-1"
                     width={192}
                     height={192}
+                    priority
                 />
             )}
         </>

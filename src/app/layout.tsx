@@ -1,8 +1,14 @@
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import { Noto_Color_Emoji } from "next/font/google";
+import { Manrope, Noto_Color_Emoji } from "next/font/google";
 import "./globals.css";
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 const notoColorEmoji = Noto_Color_Emoji({
   variable: "--font-emoji",
@@ -21,7 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${notoColorEmoji.variable} antialiased`}>
+      <body className={`${manrope.variable} ${notoColorEmoji.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}> 
           {children}
           <Analytics />
