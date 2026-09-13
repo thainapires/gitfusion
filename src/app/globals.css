@@ -1,83 +1,63 @@
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));   
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --primary: #8B5CF6;
+  --primary: #8b5cf6;
   --primary-dark: #7c4bed;
 
-  --background: #F8FAFC;
-  --foreground: #171717;
-  
-  --card: #ffffff;
-  
-  --muted-foreground: var(--color-gray-500);
+  --background: #f8fafc;
+  --foreground: #18181b;
 
-  .react-calendar-heatmap .color-scale-0 {
-    fill: var(--color-gray-200);
-  }
-  
-  .react-calendar-heatmap .color-scale-1 {
-    fill: #c6e48b; 
-  }
-  
-  .react-calendar-heatmap .color-scale-2 {
-    fill: #7bc96f; 
-  }
-  
-  .react-calendar-heatmap .color-scale-3 {
-    fill: #239a3b; 
-  } 
-  
-  .react-calendar-heatmap .color-scale-4 {
-    fill: #196127;
-  }
-  
-  .react-calendar-heatmap .color-scale-5 {
-    fill: var(--color-gray-200);
-  }
+  --surface: #f1f5f9;
+  --card: #ffffff;
+  --card-hover: #f4f4f5;
+
+  --border: #e4e4e7;
+
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+
+  --heatmap-empty: #e4e4e7;
+  --heatmap-1: #ddd6fe;
+  --heatmap-2: #c4b5fd;
+  --heatmap-3: #a78bfa;
+  --heatmap-4: #8b5cf6;
 }
 
 .dark {
-  --background: #111827;
-  --foreground: #ededed;
-  
-  --card: #1F2937;
+  --background: #080a17;
+  --foreground: #f4f4f5;
 
-  --muted-foreground: var(--color-gray-400);
+  --surface: #101421;
+  --card: #151927;
+  --card-hover: #1a1f2f;
 
-  .react-calendar-heatmap .color-scale-0 {
-    fill: #232e44;
-  }
-  
-  .react-calendar-heatmap .color-scale-1 {
-    fill: #196127; 
-  }
-  
-  .react-calendar-heatmap .color-scale-2 {
-    fill: #239a3b; 
-  }
-  
-  .react-calendar-heatmap .color-scale-3 {
-    fill: #7bc96f; 
-  }
-  
-  .react-calendar-heatmap .color-scale-4 {
-    fill: #c6e48b;
-  }
-  
-  .react-calendar-heatmap .color-scale-5 {
-    fill: #232e44; 
-  }
+  --border: #252a3b;
+
+  --muted: #1b2030;
+  --muted-foreground: #9299aa;
+
+  --heatmap-empty: #1b2030;
 }
 
-@theme{
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --color-primary: var(--primary);
-  --color-card: var(--card);
-  --color-muted-foreground: var(--muted-foreground);
   --color-primary-dark: var(--primary-dark);
-  --font-sans: var(--font-geist-sans);
+
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+
+  --color-border: var(--border);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --font-sans: var(--font-manrope);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -86,3 +66,138 @@ body {
   color: var(--foreground);
 }
 
+/* Animations */
+
+@keyframes landing-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-float {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-landing-in {
+  animation: landing-in 700ms ease-out both;
+}
+
+.animate-landing-float {
+  animation:
+    landing-in 800ms ease-out both,
+    landing-float 5s ease-in-out 900ms infinite alternate;
+}
+
+@keyframes hero-illustration-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(24px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-hero-illustration {
+  animation: hero-illustration-in 900ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both;
+  transform-origin: center;
+}
+
+/* Contribution calendar */
+
+.gf-contribution-calendar .react-calendar-heatmap text {
+  fill: var(--muted-foreground);
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.gf-contribution-calendar .react-calendar-heatmap rect {
+  rx: 2px;
+  ry: 2px;
+}
+
+/* Empty days */
+
+.gf-contribution-calendar
+  .react-calendar-heatmap
+  .gf-heatmap-scale-0 {
+  fill: var(--heatmap-empty);
+}
+
+.gf-legend-scale-0 {
+  background: var(--heatmap-empty);
+}
+
+/* Contribution levels */
+
+.gf-contribution-calendar
+  .react-calendar-heatmap
+  .gf-heatmap-scale-1 {
+  fill: var(--heatmap-1);
+}
+
+.gf-legend-scale-1 {
+  background: var(--heatmap-1);
+}
+
+.gf-contribution-calendar
+  .react-calendar-heatmap
+  .gf-heatmap-scale-2 {
+  fill: var(--heatmap-2);
+}
+
+.gf-legend-scale-2 {
+  background: var(--heatmap-2);
+}
+
+.gf-contribution-calendar
+  .react-calendar-heatmap
+  .gf-heatmap-scale-3 {
+  fill: var(--heatmap-3);
+}
+
+.gf-legend-scale-3 {
+  background: var(--heatmap-3);
+}
+
+.gf-contribution-calendar
+  .react-calendar-heatmap
+  .gf-heatmap-scale-4 {
+  fill: var(--heatmap-4);
+}
+
+.gf-legend-scale-4 {
+  background: var(--heatmap-4);
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .animate-landing-in,
+  .animate-landing-float,
+  .animate-hero-illustration {
+    animation: none;
+  }
+}
