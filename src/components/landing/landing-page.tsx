@@ -72,9 +72,6 @@ export function LandingPage() {
 
   return (
     <main className="relative min-h-screen w-screen overflow-hidden bg-background text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,13,28,0.97)_0%,rgba(6,13,28,0.7)_50%,rgba(6,13,28,0.96)_100%)]" aria-hidden />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" aria-hidden />
-
       <div className="relative z-10 mx-auto flex min-h-screen max-w-[90rem] flex-col">
         <LandingNavbar user={user} isCheckingSession={isCheckingSession} onSignOut={handleSignOut} />
 

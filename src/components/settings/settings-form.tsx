@@ -202,7 +202,7 @@ export function SettingsForm() {
         </section>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button type="submit" disabled={isSaving || isLoading} className="h-11 rounded-md bg-primary px-5 text-sm font-extrabold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60">
+          <button type="submit" disabled={isSaving || isLoading} className="h-11 rounded-md bg-primary px-5 text-sm font-extrabold text-white transition hover:bg-primary-dark cursor-pointer disabled:cursor-not-allowed disabled:opacity-60">
             {isSaving ? "Saving..." : "Save settings"}
           </button>
         </div>

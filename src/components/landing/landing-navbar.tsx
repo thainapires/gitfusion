@@ -46,7 +46,7 @@ export function LandingNavbar({ user, isCheckingSession, onSignOut }: LandingNav
           <>
             <Link
               href="/dashboard"
-              className="flex min-w-0 items-center gap-2 rounded-md bg-slate-950/35 py-1.5 text-sm font-extrabold text-white transition"
+              className="flex min-w-0 items-center gap-2 rounded-md py-1.5 text-sm font-extrabold text-white transition"
               aria-label={`Open dashboard for ${user.name}`}
             >
               <span

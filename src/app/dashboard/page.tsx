@@ -1,12 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import {
-  FiAlertCircle,
-  FiCheckCircle,
-  FiClock,
-  FiRefreshCw,
-} from "react-icons/fi";
+import { FiRefreshCw } from "react-icons/fi";
 import { IntegrationAccountsPanel } from "../../components/accounts/integration-accounts-panel";
 import { AuthenticatedLayout } from "../../components/app-shell/authenticated-layout";
 import { ActivityList } from "../../components/dashboard-overview/activity-list";
@@ -120,18 +115,21 @@ export default function DashboardPage() {
     <AuthenticatedLayout
       title={"Good to see you again, " + viewerName}
       description="Here is your connected GitHub and GitLab activity overview."
-      actions={
+      syncStatus={syncStatus}
+      syncProviders={overview?.connectedProviders ?? []}
+      syncActions={
         <button
           type="button"
           onClick={() => loadOverview({ refresh: true })}
           disabled={isRefreshing}
-          className="hidden sm:inline-flex h-10 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-bold text-muted-foreground transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-800"
+          className="inline-flex min-h-[52px] items-center justify-center gap-2 px-3 text-sm font-bold text-muted-foreground transition hover:bg-gray-50 hover:text-primary disabled:cursor-not-allowed cursor-pointer disabled:opacity-60 dark:hover:bg-gray-900/70 min-[420px]:px-4"
+          aria-label="Refresh dashboard data"
         >
           <FiRefreshCw
             className={"size-4 " + (isRefreshing ? "animate-spin" : "")}
             aria-hidden
           />
-          Refresh
+          <span className="hidden min-[420px]:inline">Refresh</span>
         </button>
       }
     >
@@ -141,8 +139,6 @@ export default function DashboardPage() {
 
       {!isLoading && overview?.hasConnections && (
         <>
-          <SyncStatusPanel sync={syncStatus} />
-
           <div className="mt-6 space-y-5">
             <KeepGoingCard
               activeDays={activeDays}
@@ -190,71 +186,6 @@ function getCurrentStreak(days: DashboardOverview["dailyContributions"]) {
   const firstInactiveIndex = activeDays.findIndex((day) => day.total <= 0);
 
   return firstInactiveIndex === -1 ? activeDays.length : firstInactiveIndex;
-}
-
-function SyncStatusPanel({ sync }: { sync: DashboardSyncStatus | null }) {
-  if (!sync || sync.status === "idle") {
-    return null;
-  }
-
-  const isSyncing = sync.status === "syncing";
-  const isSynced = sync.status === "synced";
-  const Icon = isSyncing
-    ? FiClock
-    : isSynced
-      ? FiCheckCircle
-      : FiAlertCircle;
-
-  const title = isSyncing
-    ? "Syncing provider data"
-    : isSynced
-      ? "100% synced"
-      : "Last sync failed";
-
-  const detail = isSyncing
-    ? sync.startedAt
-      ? "Started " + formatSyncDate(sync.startedAt)
-      : "Sync in progress"
-    : isSynced
-      ? sync.finishedAt
-        ? "Finished " + formatSyncDate(sync.finishedAt)
-        : "Completed"
-      : sync.errorMessage || "Unable to finish the last sync.";
-
-  return (
-    <section className="rounded-lg border border-gray-200 bg-card px-4 py-3 shadow-sm dark:border-gray-800">
-      <div className="flex min-w-0 items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <Icon
-              className={"size-4 " + (isSyncing ? "animate-pulse" : "")}
-              aria-hidden
-            />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-extrabold text-foreground">
-              {title}
-            </p>
-            <p className="truncate text-xs font-medium text-muted-foreground">
-              {detail}
-            </p>
-          </div>
-        </div>
-        {sync.progressPercent === 100 && (
-          <span className="shrink-0 rounded-md border border-primary/20 px-2 py-1 text-xs font-extrabold text-primary">
-            100%
-          </span>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function formatSyncDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }
 
 function DashboardLoading() {
