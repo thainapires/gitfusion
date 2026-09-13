@@ -2,14 +2,28 @@ import crypto from "crypto";
 
 const encryptedPrefix = "v1";
 
-export function encryptProviderToken(token: string | null | undefined) {
+export function encryptProviderToken(token: string): string;
+export function encryptProviderToken(token: null | undefined): null;
+export function encryptProviderToken(
+  token: string | null | undefined,
+): string | null {
   if (!token) {
     return null;
   }
 
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv("aes-256-gcm", getEncryptionKey(), iv);
-  const encrypted = Buffer.concat([cipher.update(token, "utf8"), cipher.final()]);
+
+  const cipher = crypto.createCipheriv(
+    "aes-256-gcm",
+    getEncryptionKey(),
+    iv,
+  );
+
+  const encrypted = Buffer.concat([
+    cipher.update(token, "utf8"),
+    cipher.final(),
+  ]);
+
   const authTag = cipher.getAuthTag();
 
   return [

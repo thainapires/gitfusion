@@ -1,59 +1,72 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildAuthorizationUrl, isIntegrationProvider } from "../../../../../lib/integrations/providers";
-import { createSupabaseAdminClient, createSupabaseUserServerClient, isSupabaseServerConfigured } from "../../../../../lib/supabase/server";
 
-type RouteContext = {
-  params: Promise<{ provider: string }>;
-};
+import { isIntegrationProvider } from "@/lib/integrations/providers";
+import { getAuthenticatedUser } from "@/server/auth/auth.service";
+import { startIntegration } from "@/server/modules/integrations/integration.service";
+import { RouteContext } from "@/server/modules/integrations/integration.types";
+import { AppError } from "@/server/errors/app-error";
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const { provider } = await context.params;
-
-  if (!isIntegrationProvider(provider)) {
-    return NextResponse.json({ error: "Unsupported integration provider." }, { status: 400 });
-  }
-
-  if (!isSupabaseServerConfigured()) {
-    return NextResponse.json({ error: "Supabase server configuration is missing." }, { status: 500 });
-  }
-
-  const accessToken = request.headers.get("authorization")?.replace("Bearer ", "");
-
-  if (!accessToken) {
-    return NextResponse.json({ error: "Missing Supabase access token." }, { status: 401 });
-  }
-
-  const userSupabase = createSupabaseUserServerClient(accessToken);
-  const { data: userData, error: userError } = await userSupabase.auth.getUser();
-
-  if (userError || !userData.user) {
-    return NextResponse.json({ error: "You must be signed in to connect an account." }, { status: 401 });
-  }
-
-  const body = await request.json().catch(() => ({})) as { redirectTo?: string };
-  const redirectTo = body.redirectTo?.startsWith("/") ? body.redirectTo : "/connect-accounts";
-  const redirectUri = `${request.nextUrl.origin}/api/integrations/${provider}/callback`;
-  const state = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-  const adminSupabase = createSupabaseAdminClient();
-
-  const { error: stateError } = await adminSupabase.from("oauth_states").insert({
-    state,
-    user_id: userData.user.id,
-    provider,
-    redirect_to: redirectTo,
-    expires_at: expiresAt,
-  });
-
-  if (stateError) {
-    return NextResponse.json({ error: stateError.message }, { status: 500 });
-  }
-
+export async function POST(
+  request: NextRequest,
+  context: RouteContext,
+) {
   try {
-    return NextResponse.json({
-      authorizationUrl: buildAuthorizationUrl({ provider, state, redirectUri }),
+    const { provider } = await context.params;
+
+    if (!isIntegrationProvider(provider)) {
+      return NextResponse.json(
+        { error: "Unsupported integration provider." },
+        { status: 400 },
+      );
+    }
+
+    const accessToken = request.headers
+      .get("authorization")
+      ?.replace("Bearer ", "");
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "Missing Supabase access token." },
+        { status: 401 },
+      );
+    }
+
+    const user = await getAuthenticatedUser(accessToken);
+
+    const body = (await request
+      .json()
+      .catch(() => ({}))) as {
+      redirectTo?: string;
+    };
+
+    const redirectTo = body.redirectTo?.startsWith("/")
+      ? body.redirectTo
+      : "/connect-accounts";
+
+    const redirectUri =
+      `${request.nextUrl.origin}/api/integrations/${provider}/callback`;
+
+    const result = await startIntegration({
+      provider,
+      userId: user.id,
+      redirectTo,
+      redirectUri,
     });
+
+    return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to start OAuth flow." }, { status: 500 });
+    console.error("Unable to start OAuth flow", error);
+
+    if (error instanceof AppError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Unable to start OAuth flow."},
+      { status: 500 },
+    );
   }
 }
