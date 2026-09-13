@@ -8,6 +8,7 @@ import { ActivityList } from "../components/dashboard-overview/activity-list";
 import { ContributionChart } from "../components/dashboard-overview/contribution-chart";
 import { MetricCard } from "../components/dashboard-overview/metric-card";
 import { RepositoryTable } from "../components/dashboard-overview/repository-table";
+import { readApiJson } from "../lib/api/response";
 import { notify } from "../lib/notifications/toast";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../lib/supabase/client";
 import { mockUser } from "../mocks/user";
@@ -38,7 +39,7 @@ export default function DashboardPage() {
           Authorization: `Bearer ${data.session.access_token}`,
         },
       });
-      const result = await response.json() as { overview?: DashboardOverview; error?: string };
+      const result = await readApiJson<{ overview?: DashboardOverview; error?: string }>(response);
 
       if (!response.ok || !result.overview) {
         throw new Error(result.error || "Unable to load dashboard data.");
@@ -59,6 +60,9 @@ export default function DashboardPage() {
     return () => window.removeEventListener("gitfusion:integrations-changed", reloadOverview);
   }, [loadOverview]);
 
+  const activeDays = overview?.dailyContributions.filter((day) => day.total > 0).length ?? 0;
+  const currentStreak = overview ? getCurrentStreak(overview.dailyContributions) : 0;
+
   return (
     <AuthenticatedLayout
       title={`Good to see you again, ${mockUser.name.split(" ")[0]}`}
@@ -67,7 +71,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => loadOverview({ refresh: true })}
-          className="inline-flex h-10 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-bold text-muted-foreground transition hover:border-primary hover:text-primary dark:border-gray-800"
+          className="hidden sm:inline-flex h-10 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-bold text-muted-foreground transition hover:border-primary hover:text-primary dark:border-gray-800"
         >
           <FiRefreshCw className="size-4" aria-hidden />
           Refresh
@@ -82,16 +86,16 @@ export default function DashboardPage() {
         <>
           <div className="space-y-5">
             <KeepGoingCard
-              activeDays={33}
-              currentStreak={0}
+              activeDays={activeDays}
+              currentStreak={currentStreak}
             />
           </div>
 
           <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,24rem)]">
             <div className="min-w-0 space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 grid-cols-2 xl:grid-cols-3">
                 {overview.metrics.map((metric) => (
-                  <MetricCard key={metric.label} metric={metric} />
+                    <MetricCard key={metric.label} metric={metric} />
                 ))}
               </div>
               <ContributionChart data={overview.dailyContributions} />
@@ -106,6 +110,39 @@ export default function DashboardPage() {
       )}
     </AuthenticatedLayout>
   );
+}
+
+function getCurrentStreak(days: DashboardOverview["dailyContributions"]) {
+  const sortedDays = [...days].sort((a, b) => b.date.localeCompare(a.date));
+
+  const firstActiveIndex = sortedDays.findIndex((day) => day.total > 0);
+
+  if (firstActiveIndex === -1) {
+    return 0;
+  }
+
+  const activeDays = sortedDays.slice(firstActiveIndex);
+  const firstInactiveIndex = activeDays.findIndex((day) => day.total <= 0);
+
+  return firstInactiveIndex === -1 ? activeDays.length : firstInactiveIndex;
+}
+
+function startOfLocalDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function addDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+}
+
+function formatDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function DashboardLoading() {

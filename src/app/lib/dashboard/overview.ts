@@ -17,6 +17,7 @@ type ProviderDashboardData = {
 };
 
 const dashboardDays = 365;
+const gitlabApiBaseUrl = "https://gitlab.com/api/v4";
 
 export async function buildDashboardOverview(accounts: ConnectedAccountRow[]): Promise<DashboardOverview> {
   const dates = buildDateRange(dashboardDays);
@@ -26,6 +27,8 @@ export async function buildDashboardOverview(accounts: ConnectedAccountRow[]): P
       hasConnections: false,
       connectedProviders: [],
       metrics: buildMetrics({ total: 0, githubTotal: 0, gitlabTotal: 0, repositories: 0, pullOrMergeRequests: 0, currentStreak: 0, activeDays: 0 }),
+      activeDays: 0,
+      currentStreak: 0,
       dailyContributions: dates.map((date) => ({ date, total: 0, platforms: { github: 0, gitlab: 0 } })),
       recentActivity: [],
       topRepositories: [],
@@ -47,6 +50,8 @@ export async function buildDashboardOverview(accounts: ConnectedAccountRow[]): P
     hasConnections: true,
     connectedProviders: accounts.map((account) => account.provider),
     metrics: buildMetrics({ total, githubTotal, gitlabTotal, repositories, pullOrMergeRequests, currentStreak, activeDays }),
+    activeDays,
+    currentStreak,
     dailyContributions,
     recentActivity: providerData.flatMap((item) => item.activities).sort(sortActivities).slice(0, 8),
     topRepositories: providerData.flatMap((item) => item.repositories).sort((a, b) => b.contributions - a.contributions).slice(0, 8),
@@ -186,24 +191,15 @@ async function fetchGitHubEvents(account: ConnectedAccountRow) {
 }
 
 async function fetchGitLabDashboardData(account: ConnectedAccountRow, since: string): Promise<ProviderDashboardData> {
-  const [projectsResponse, eventsResponse] = await Promise.all([
-    fetch("https://gitlab.com/api/v4/projects?membership=true&simple=true&per_page=100&order_by=last_activity_at&sort=desc", {
-      headers: { Authorization: `Bearer ${account.access_token}` },
-    }),
-    fetch(`https://gitlab.com/api/v4/users/${encodeURIComponent(account.provider_user_id)}/events?after=${since}&per_page=100`, {
-      headers: { Authorization: `Bearer ${account.access_token}` },
-    }),
+  const [calendarDaily, projects, events] = await Promise.all([
+    fetchGitLabCalendarContributions(account, since),
+    fetchGitLabProjects(account),
+    fetchGitLabEvents(account, since),
   ]);
 
-  const projects = projectsResponse.ok ? await projectsResponse.json() as { name_with_namespace?: string; name: string; visibility: string; last_activity_at: string | null; star_count?: number; forks_count?: number }[] : [];
-  const events = eventsResponse.ok ? await eventsResponse.json() as { id: number; action_name?: string; target_type?: string | null; project_id?: number; created_at: string; push_data?: { ref?: string }; author_username?: string }[] : [];
-  const daily = new Map<string, number>();
   let mergeRequests = 0;
 
   events.forEach((event) => {
-    const date = event.created_at.slice(0, 10);
-    daily.set(date, (daily.get(date) || 0) + 1);
-
     if ((event.target_type || "").toLowerCase().includes("merge")) {
       mergeRequests += 1;
     }
@@ -211,7 +207,7 @@ async function fetchGitLabDashboardData(account: ConnectedAccountRow, since: str
 
   return {
     provider: "gitlab",
-    daily,
+    daily: calendarDaily,
     repositories: projects.slice(0, 12).map((project) => ({
       name: project.name_with_namespace || project.name,
       platform: "gitlab",
@@ -230,6 +226,99 @@ async function fetchGitLabDashboardData(account: ConnectedAccountRow, since: str
   };
 }
 
+async function fetchGitLabCalendarContributions(account: ConnectedAccountRow, since: string) {
+  const response = await fetch(`https://gitlab.com/users/${encodeURIComponent(account.username)}/calendar.json`, {
+    headers: { Authorization: `Bearer ${account.access_token}` },
+  });
+
+  if (!response.ok) {
+    return new Map<string, number>();
+  }
+
+  const calendar = await response.json() as Record<string, number>;
+  const daily = new Map<string, number>();
+
+  Object.entries(calendar).forEach(([date, count]) => {
+    if (date >= since) {
+      daily.set(date, Number(count) || 0);
+    }
+  });
+
+  return daily;
+}
+
+type GitLabProject = {
+  id: number;
+  name_with_namespace?: string;
+  name: string;
+  visibility: string;
+  last_activity_at: string | null;
+  star_count?: number;
+  forks_count?: number;
+};
+
+type GitLabEvent = {
+  id: number;
+  action_name?: string;
+  target_type?: string | null;
+  project_id?: number;
+  created_at: string;
+  push_data?: { ref?: string };
+  author_username?: string;
+};
+
+async function fetchGitLabProjects(account: ConnectedAccountRow) {
+  const [membershipProjects, contributedProjects] = await Promise.all([
+    fetchAllGitLabPages<GitLabProject>("/projects?membership=true&simple=true&per_page=100&order_by=last_activity_at&sort=desc", account.access_token),
+    fetchAllGitLabPages<GitLabProject>(`/users/${encodeURIComponent(account.provider_user_id)}/contributed_projects?simple=true&per_page=100&order_by=last_activity_at&sort=desc`, account.access_token),
+  ]);
+
+  const projectsById = new Map<number, GitLabProject>();
+  [...membershipProjects, ...contributedProjects].forEach((project) => {
+    projectsById.set(project.id, project);
+  });
+
+  return Array.from(projectsById.values())
+    .sort((a, b) => new Date(b.last_activity_at || 0).getTime() - new Date(a.last_activity_at || 0).getTime());
+}
+
+async function fetchGitLabEvents(account: ConnectedAccountRow, since: string) {
+  return fetchAllGitLabPages<GitLabEvent>(
+    `/users/${encodeURIComponent(account.provider_user_id)}/events?after=${since}&per_page=100&sort=desc`,
+    account.access_token,
+  );
+}
+
+async function fetchAllGitLabPages<T>(path: string, accessToken: string, maxPages = 20) {
+  const items: T[] = [];
+  let nextPath: string | null = path;
+  let pageCount = 0;
+
+  while (nextPath && pageCount < maxPages) {
+    pageCount += 1;
+    const response: Response = await fetch(`${gitlabApiBaseUrl}${nextPath}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      break;
+    }
+
+    items.push(...await response.json() as T[]);
+    const nextPage = response.headers.get("x-next-page");
+    nextPath = nextPage ? withGitLabPage(path, nextPage) : null;
+  }
+
+  return items;
+}
+
+function withGitLabPage(path: string, page: string) {
+  const [pathname, query = ""] = path.split("?");
+  const params = new URLSearchParams(query);
+  params.set("page", page);
+  return `${pathname}?${params.toString()}`;
+}
+
 function buildDateRange(days: number) {
   const endDate = new Date();
   endDate.setHours(0, 0, 0, 0);
@@ -239,7 +328,7 @@ function buildDateRange(days: number) {
   return Array.from({ length: days }, (_, index) => {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + index);
-    return date.toISOString().slice(0, 10);
+    return formatDateKey(date);
   });
 }
 
@@ -261,6 +350,7 @@ function buildMetrics({ total, githubTotal, gitlabTotal, repositories, pullOrMer
     { label: "Total contributions", value: total.toLocaleString("en-US"), helper: `GitHub ${githubTotal.toLocaleString("en-US")} · GitLab ${gitlabTotal.toLocaleString("en-US")}`, trend: `${activeDays} active days` },
     { label: "Repositories", value: repositories.toLocaleString("en-US"), helper: "Connected provider repositories", trend: repositories ? "Loaded from providers" : "No repositories yet" },
     { label: "Pull / merge requests", value: pullOrMergeRequests.toLocaleString("en-US"), helper: "Detected from provider APIs", trend: "Last year window" },
+    { label: "Active days", value: activeDays.toLocaleString("en-US"), helper: "This year", trend: `${currentStreak} day streak`, mobile: true }
   ];
 }
 
@@ -273,18 +363,37 @@ function sumProviderTotal(providerData: ProviderDashboardData[], provider: Accou
   }, 0);
 }
 
-function getCurrentStreak(days: DailyContribution[]) {
-  let streak = 0;
+function getCurrentStreak(days: DashboardOverview["dailyContributions"]) {
+  const sortedDays = [...days].sort((a, b) => b.date.localeCompare(a.date));
 
-  for (let index = days.length - 1; index >= 0; index -= 1) {
-    if (days[index].total <= 0) {
-      break;
-    }
+  const firstActiveIndex = sortedDays.findIndex((day) => day.total > 0);
 
-    streak += 1;
+  if (firstActiveIndex === -1) {
+    return 0;
   }
 
-  return streak;
+  const activeDays = sortedDays.slice(firstActiveIndex);
+  const firstInactiveIndex = activeDays.findIndex((day) => day.total <= 0);
+
+  return firstInactiveIndex === -1 ? activeDays.length : firstInactiveIndex;
+}
+
+function startOfLocalDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function addDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+}
+
+function formatDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function sortActivities(a: ActivityItem, b: ActivityItem) {

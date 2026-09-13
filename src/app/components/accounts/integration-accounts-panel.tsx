@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { readApiJson } from "../../lib/api/response";
 import { notify } from "../../lib/notifications/toast";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
 import { mockAccounts } from "../../mocks/accounts";
@@ -47,7 +48,7 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
       },
     });
 
-    const result = await response.json() as { accounts?: ConnectedAccountResponse[]; error?: string };
+    const result = await readApiJson<{ accounts?: ConnectedAccountResponse[]; error?: string }>(response);
 
     if (!response.ok) {
       notify({ type: "error", title: "Unable to load integrations", message: result.error || "Unable to load connected accounts." });
@@ -98,7 +99,7 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
         body: JSON.stringify({ redirectTo }),
       });
 
-      const result = await response.json() as { authorizationUrl?: string; error?: string };
+      const result = await readApiJson<{ authorizationUrl?: string; error?: string }>(response);
 
       if (!response.ok || !result.authorizationUrl) {
         throw new Error(result.error || `Unable to start ${provider} connection.`);
@@ -131,7 +132,7 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
         },
       });
 
-      const result = await response.json() as { error?: string };
+      const result = await readApiJson<{ error?: string }>(response);
 
       if (!response.ok) {
         throw new Error(result.error || `Unable to disconnect ${provider}.`);

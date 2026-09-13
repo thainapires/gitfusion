@@ -28,6 +28,7 @@ export type DashboardMetric = {
   value: string;
   helper: string;
   trend: string;
+  mobile?: boolean;
 };
 
 export type ActivityItem = {

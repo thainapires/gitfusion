@@ -1,9 +1,17 @@
 import Link from "next/link";
 
-export function HeroContent() {
+type HeroContentProps = {
+  isAuthenticated: boolean;
+  isCheckingSession: boolean;
+};
+
+export function HeroContent({ isAuthenticated, isCheckingSession }: HeroContentProps) {
+  const primaryHref = isAuthenticated ? "/dashboard" : "/sign-up";
+  const secondaryHref = isAuthenticated ? "/connect-accounts" : "/sign-in";
+
   return (
     <div className="max-w-[39rem] animate-landing-in">
-      <p className="mb-5 inline-flex items-center border-l-2 border-emerald-400/80 pl-3 text-xs font-bold uppercase tracking-[0.22em] text-emerald-300">
+      <p className="mb-5 inline-flex items-center border-l-2 border-primary pl-3 text-xs font-bold uppercase tracking-[0.22em] text-primary">
         Developer activity across every source
       </p>
 
@@ -17,17 +25,22 @@ export function HeroContent() {
 
       <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
-          href="/sign-up"
-          className="inline-flex h-12 w-full items-center justify-center bg-emerald-300 px-7 text-sm font-extrabold text-slate-950 transition hover:bg-emerald-200 sm:w-auto"
+          href={primaryHref}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-extrabold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
+          aria-disabled={isCheckingSession}
         >
-          Build my activity profile
+          {isAuthenticated ? "Go to dashboard" : "Build my activity profile"}
         </Link>
-        <Link
-          href="/sign-in"
-          className="inline-flex h-12 w-full items-center justify-center border border-slate-600 px-7 text-sm font-bold text-slate-200 transition hover:border-emerald-300/70 hover:text-white sm:w-auto"
-        >
-          Sign in
-        </Link>
+
+        {!isAuthenticated && (
+          <Link
+            href={secondaryHref}
+            className="rounded-md border border-slate-600 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
+            aria-disabled={isCheckingSession}
+          >
+            Sign in
+          </Link>
+        )}
       </div>
     </div>
   );

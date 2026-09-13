@@ -1,4 +1,5 @@
-import { FaCodeMerge, FaGithub, FaGitlab } from "react-icons/fa6";
+import Image from "next/image";
+import { FaGithub, FaGitlab } from "react-icons/fa6";
 import { FiGrid, FiSettings } from "react-icons/fi";
 
 const metrics = [
@@ -39,7 +40,25 @@ export function HeroIllustration() {
           <div className="grid h-[560px] w-[1000px] grid-cols-[180px_minmax(0,1fr)] bg-[#060d1c] text-white">
             <aside className="flex flex-col border-r border-slate-800/90 bg-slate-950/35 p-5">
               <div className="mb-8 flex items-center gap-2 text-sm font-extrabold">
-                <FaCodeMerge className="size-5 text-primary" aria-hidden />
+                <>
+                  <Image
+                    src="/images/logo.png"
+                    alt=""
+                    width={24}
+                    height={24}
+                    aria-hidden
+                    className="size-6 dark:hidden"
+                  />
+      
+                  <Image
+                    src="/images/logo-dark.png"
+                    alt=""
+                    width={24}
+                    height={24}
+                    aria-hidden
+                    className="hidden size-6 dark:block"
+                  />
+                </>
                 Git Fusion
               </div>
 

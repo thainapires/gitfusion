@@ -19,7 +19,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
     <article className="min-w-0 rounded-lg border border-gray-200 bg-background p-4 shadow-sm dark:border-gray-800">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
-          <span className={`grid size-11 shrink-0 place-items-center rounded-md ${account.provider === "github" ? "bg-slate-900 text-white" : "bg-orange-100 text-orange-600 dark:bg-orange-950/40"}`}>
+          <span className={`grid size-11 shrink-0 place-items-center rounded-md ${account.provider === "github" ? "bg-slate-900 text-white" : "bg-orange-100 text-amber-600 dark:bg-amber-800/30"}`}>
             <Icon className="size-5" aria-hidden />
           </span>
           <div className="min-w-0">
@@ -41,7 +41,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
             disabled={isConnecting}
             className={`w-full rounded-md px-3 py-2 text-sm font-extrabold text-white transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${
               isConnected
-                ? "bg-red-500 hover:bg-red-600"
+                ? "bg-rose-500 hover:bg-rose-600"
                 : "bg-emerald-500 hover:bg-emerald-600"
             }`}
           >

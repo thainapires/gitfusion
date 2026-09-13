@@ -10,6 +10,7 @@ import { mockUser } from "../../mocks/user";
 import { SidebarItem } from "../../types/mock-app";
 import { ThemeToggle } from "../layout/theme-toggle";
 import { Avatar } from "@heroui/react";
+import Image from "next/image";
 
 const sidebarItems: SidebarItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: FiGrid },
@@ -78,15 +79,15 @@ export function AuthenticatedLayout({ title, description, children, actions }: A
         >
           <Sidebar collapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed((collapsed) => !collapsed)} />
         </aside>
-        <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
+        <main className="min-w-0 flex-1 overflow-x-hidden py-3 px-6 lg:px-8">
           <div className="mx-auto w-full min-w-0">
             <header className="flex flex-col gap-4 pb-5 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Dashboard</p>
-                <h1 className="mt-1 text-2xl font-extrabold tracking-normal sm:text-3xl">{title}</h1>
-                <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+                <p className="hidden sm:block text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Dashboard</p>
+                <h1 className="mt-1 text-3xl font-semibold sm:font-extrabold tracking-normal sm:text-3xl">{title}</h1>
+                <p className="mt-1 max-w-2xl text-lg sm:text-sm tracking-wide sm:tracking-normal leading-6 text-muted-foreground">{description}</p>
               </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}<ThemeToggle /></div>
+              <div className="hidden sm:flex shrink-0 flex-wrap items-center gap-3">{actions}<ThemeToggle /></div>
             </header>
             {children}
           </div>
@@ -97,20 +98,67 @@ export function AuthenticatedLayout({ title, description, children, actions }: A
 }
 
 function MobileTopbar({ onOpen }: { onOpen: () => void }) {
+  const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(mockUser.avatarUrl || null);
+  const [displayName, setDisplayName] = useState(mockUser.name);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+
+    const loadUser = async () => {
+      const supabase = createSupabaseBrowserClient();
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+
+      if (!user) {
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name,avatar_url")
+        .eq("id", user.id)
+        .maybeSingle<{ full_name: string | null; avatar_url: string | null }>();
+
+      const metadataName = typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name : "";
+      const metadataAvatarUrl = typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : "";
+      const fullName = profile?.full_name || metadataName || user.email;
+
+      setDisplayName(fullName || mockUser.name);
+      setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || mockUser.avatarUrl || null);
+    };
+
+    loadUser();
+    window.addEventListener("gitfusion:profile-updated", loadUser);
+    return () => window.removeEventListener("gitfusion:profile-updated", loadUser);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-gray-200 bg-card px-4 dark:border-gray-800">
-      <Link href="/dashboard" className="flex items-center gap-2 font-extrabold">
-        <FaCodeMerge className="size-5 text-primary" aria-hidden />
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between sm:border-b sm:border-gray-200 bg-background sm:bg-card px-5 dark:border-gray-800">
+      <Link href="/dashboard" className="order-2 sm:order-1 flex items-center gap-2 text-lg sm:text-md font-extrabold">
+        <FaCodeMerge className="size-6 sm:size-5 text-primary" aria-hidden />
         Git Fusion
       </Link>
       <button
         type="button"
         onClick={onOpen}
-        className="grid size-10 place-items-center rounded-md border border-gray-200 text-muted-foreground dark:border-gray-800"
+        className="order-1 sm:order-2 grid size-10 place-items-center rounded-md border border-gray-200 text-muted-foreground dark:border-gray-800"
         aria-label="Open navigation"
       >
         <FiMenu className="size-5" aria-hidden />
       </button>
+      <Avatar className="order-3 sm:hide size-8 shrink-0 overflow-hidden rounded-full">
+        <Avatar.Image
+          src={displayAvatarUrl || undefined}
+          alt={displayName}
+          className="size-full object-cover"
+        />
+
+        <Avatar.Fallback className="flex size-full items-center justify-center">
+          {getInitials(displayName)}
+        </Avatar.Fallback>
+      </Avatar>
     </header>
   );
 }
@@ -171,7 +219,25 @@ function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNaviga
     <div className="flex h-full flex-col">
       <div className={`flex h-16 items-center border-b border-gray-200 dark:border-gray-800 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
         <Link href="/dashboard" onClick={onNavigate} className={`flex items-center font-extrabold ${collapsed ? "justify-center" : "gap-3"}`} aria-label="Git Fusion dashboard" title={collapsed ? "Git Fusion" : undefined}>
-          <FaCodeMerge className="size-6 text-primary" aria-hidden />
+          <>
+            <Image
+              src="/images/logo.png"
+              alt=""
+              width={24}
+              height={24}
+              aria-hidden
+              className="size-6 dark:hidden"
+            />
+
+            <Image
+              src="/images/logo-dark.png"
+              alt=""
+              width={24}
+              height={24}
+              aria-hidden
+              className="hidden size-6 dark:block"
+            />
+          </>
           {!collapsed && "Git Fusion"}
         </Link>
         {onNavigate ? (
@@ -222,7 +288,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNaviga
         }`}
       >
         <div
-          className={`flex items-center rounded-md ${
+          className={`hidden sm:flex items-center rounded-md ${
             collapsed
               ? "justify-center p-2"
               : "gap-3 bg-background p-3"

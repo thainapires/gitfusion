@@ -4,6 +4,8 @@ export type DashboardOverview = {
   hasConnections: boolean;
   connectedProviders: AccountProvider[];
   metrics: DashboardMetric[];
+  activeDays: number;
+  currentStreak: number;
   dailyContributions: DailyContribution[];
   recentActivity: ActivityItem[];
   topRepositories: RepositorySummary[];
