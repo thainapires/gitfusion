@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "ci": "npm run lint && npm run typecheck && npm run test:run && npm run build",
     "supabase:link": "npx supabase link",
     "supabase:push": "npx supabase db push"
   },
@@ -37,6 +41,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.25",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.0"
   }
 }

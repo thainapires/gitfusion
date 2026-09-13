@@ -1,4 +1,7 @@
+import { after } from "next/server";
+
 import { AccountProvider } from "@/types/mock-app";
+import { DashboardSyncStatus } from "@/types/dashboard";
 import {
   buildDashboardOverview,
   buildDashboardOverviewFromStoredDailyTotals,
@@ -17,12 +20,17 @@ import {
   persistDailyTotals,
   readFreshCachedOverview,
   readLatestCachedOverview,
+  readLatestSyncRun,
+  readRunningSyncRun,
   readStoredDailyTotals,
   saveCachedOverview,
+  SyncRunStatusRow,
 } from "./dashboard.repository";
 import { ConnectedAccountRow } from "./dashboard.types";
 import { getAuthenticatedUser } from "@/server/auth/auth.service";
 import { AppError } from "@/server/errors/app-error";
+
+const STALE_RUNNING_SYNC_MS = 15 * 60 * 1000;
 
 type GetDashboardOverviewParams = {
   accessToken: string;
@@ -49,22 +57,66 @@ export async function getDashboardOverview({
   const cacheKey = buildDashboardCacheKey(accounts);
 
   if (!forceRefresh) {
-    const cachedResult = await getCachedDashboardOverview({
+    const cachedOverview = await readFreshCachedOverview(userId, cacheKey);
+
+    if (cachedOverview?.overview) {
+      return {
+        overview: cachedOverview.overview,
+        cache: {
+          hit: true,
+          source: "overview_cache" as const,
+          expiresAt: cachedOverview.expires_at,
+        },
+        sync: await getDashboardSyncStatus(userId),
+      };
+    }
+  }
+
+  const storedResult = await getStoredDashboardOverview({
+    userId,
+    accounts,
+    cacheKey,
+  });
+
+  let sync = await getDashboardSyncStatus(userId);
+
+  if (shouldStartSync({ accounts, forceRefresh, sync })) {
+    const started = await scheduleDashboardSync({
       userId,
       accounts,
       cacheKey,
     });
 
-    if (cachedResult) {
-      return cachedResult;
+    if (started) {
+      sync = syncStatusFromRun(started);
     }
   }
 
-  return syncDashboardOverview({
-    userId,
-    accounts,
-    cacheKey,
+  if (storedResult) {
+    return {
+      ...storedResult,
+      sync,
+    };
+  }
+
+  const overview = buildDashboardOverviewFromStoredDailyTotals({
+    providers: accounts.map((account) => account.provider),
+    rows: [],
   });
+
+  const expiresAt = accounts.length
+    ? new Date().toISOString()
+    : await saveCachedOverview(userId, cacheKey, overview);
+
+  return {
+    overview,
+    cache: {
+      hit: false,
+      source: "empty_state" as const,
+      expiresAt,
+    },
+    sync,
+  };
 }
 
 async function getConnectedAccounts(
@@ -86,7 +138,7 @@ async function getConnectedAccounts(
   return (data || []) as ConnectedAccountRow[];
 }
 
-async function getCachedDashboardOverview({
+async function getStoredDashboardOverview({
   userId,
   accounts,
   cacheKey,
@@ -95,37 +147,26 @@ async function getCachedDashboardOverview({
   accounts: ConnectedAccountRow[];
   cacheKey: string;
 }) {
-  const cachedOverview = await readFreshCachedOverview(userId, cacheKey);
-
-  if (cachedOverview?.overview) {
-    return {
-      overview: cachedOverview.overview,
-      cache: {
-        hit: true,
-        source: "overview_cache" as const,
-        expiresAt: cachedOverview.expires_at,
-      },
-    };
-  }
-
-  if (!accounts.length || !accounts.every(hasRecentSync)) {
-    return null;
-  }
-
   const [dailyTotals, fallbackOverview] = await Promise.all([
     readStoredDailyTotals(userId),
     readLatestCachedOverview(userId),
   ]);
 
-  if (!dailyTotals.length) {
+  if (!dailyTotals.length && !fallbackOverview?.overview) {
     return null;
   }
 
-  const overview = buildDashboardOverviewFromStoredDailyTotals({
-    providers: accounts.map((account) => account.provider),
-    rows: dailyTotals,
-    fallbackOverview: fallbackOverview?.overview,
-  });
+  const overview = dailyTotals.length
+    ? buildDashboardOverviewFromStoredDailyTotals({
+        providers: accounts.map((account) => account.provider),
+        rows: dailyTotals,
+        fallbackOverview: fallbackOverview?.overview,
+      })
+    : fallbackOverview?.overview;
+
+  if (!overview) {
+    return null;
+  }
 
   const expiresAt = await saveCachedOverview(
     userId,
@@ -137,13 +178,33 @@ async function getCachedDashboardOverview({
     overview,
     cache: {
       hit: false,
-      source: "daily_totals" as const,
+      source: "stored_snapshot" as const,
       expiresAt,
     },
   };
 }
 
-async function syncDashboardOverview({
+function shouldStartSync({
+  accounts,
+  forceRefresh,
+  sync,
+}: {
+  accounts: ConnectedAccountRow[];
+  forceRefresh: boolean;
+  sync: DashboardSyncStatus;
+}) {
+  if (!accounts.length) {
+    return false;
+  }
+
+  if (sync.status === "syncing") {
+    return false;
+  }
+
+  return forceRefresh || !accounts.every(hasRecentSync);
+}
+
+async function scheduleDashboardSync({
   userId,
   accounts,
   cacheKey,
@@ -152,22 +213,63 @@ async function syncDashboardOverview({
   accounts: ConnectedAccountRow[];
   cacheKey: string;
 }) {
-  const fetchAccounts = getFetchAccounts(accounts);
+  const runningSync = await readRunningSyncRun(userId);
 
-  if (
-    accounts.length &&
-    fetchAccounts.length !== accounts.length
-  ) {
-    throw new AppError(
-        "One or more connected provider tokens are unavailable. Reconnect the affected account.",
-        409,
-    );
+  if (runningSync && !isStaleRunningSync(runningSync)) {
+    return runningSync;
   }
 
-  let syncRunId: string | null = null;
+  const syncRun = await startSyncRun(userId);
 
+  if (!syncRun) {
+    return null;
+  }
+
+  after(async () => {
+    try {
+      await syncDashboardOverview({
+        userId,
+        accounts,
+        cacheKey,
+        syncRunId: syncRun.id,
+      });
+    } catch (error) {
+      console.error("Dashboard background sync failed", error);
+    }
+  });
+
+  return {
+    id: syncRun.id,
+    status: "running" as const,
+    started_at: syncRun.startedAt,
+    finished_at: null,
+    error_message: null,
+  };
+}
+
+async function syncDashboardOverview({
+  userId,
+  accounts,
+  cacheKey,
+  syncRunId,
+}: {
+  userId: string;
+  accounts: ConnectedAccountRow[];
+  cacheKey: string;
+  syncRunId: string;
+}) {
   try {
-    syncRunId = await startSyncRun(userId);
+    const fetchAccounts = getFetchAccounts(accounts);
+
+    if (
+      accounts.length &&
+      fetchAccounts.length !== accounts.length
+    ) {
+      throw new AppError(
+        "One or more connected provider tokens are unavailable. Reconnect the affected account.",
+        409,
+      );
+    }
 
     const overview = await buildDashboardOverview(fetchAccounts);
 
@@ -178,7 +280,7 @@ async function syncDashboardOverview({
       fetchAccounts.map((account) => account.provider),
     );
 
-    const expiresAt = await saveCachedOverview(
+    await saveCachedOverview(
       userId,
       cacheKey,
       overview,
@@ -189,33 +291,15 @@ async function syncDashboardOverview({
       "succeeded",
       overview.dailyContributions.length,
     );
-
-    return {
-      overview,
-      cache: {
-        hit: false,
-        source: "provider_sync" as const,
-        expiresAt,
-      },
-    };
   } catch (error) {
-    if (syncRunId) {
-      try {
-        await finishSyncRun(
-          syncRunId,
-          "failed",
-          0,
-          error instanceof Error
-            ? error.message
-            : "Unable to load dashboard overview.",
-        );
-      } catch (syncError) {
-        console.error(
-          "Unable to mark dashboard sync as failed",
-          syncError,
-        );
-      }
-    }
+    await finishSyncRun(
+      syncRunId,
+      "failed",
+      0,
+      error instanceof Error
+        ? error.message
+        : "Unable to load dashboard overview.",
+    );
 
     throw error;
   }
@@ -239,8 +323,66 @@ function getFetchAccounts(
     );
 }
 
+async function getDashboardSyncStatus(
+  userId: string,
+): Promise<DashboardSyncStatus> {
+  const syncRun = await readLatestSyncRun(userId);
+
+  if (!syncRun) {
+    return {
+      status: "idle",
+      progressPercent: null,
+      startedAt: null,
+      finishedAt: null,
+      errorMessage: null,
+    };
+  }
+
+  return syncStatusFromRun(syncRun);
+}
+
+function syncStatusFromRun(
+  syncRun: SyncRunStatusRow,
+): DashboardSyncStatus {
+  if (syncRun.status === "running" && !isStaleRunningSync(syncRun)) {
+    return {
+      status: "syncing",
+      progressPercent: null,
+      startedAt: syncRun.started_at,
+      finishedAt: null,
+      errorMessage: null,
+    };
+  }
+
+  if (syncRun.status === "succeeded") {
+    return {
+      status: "synced",
+      progressPercent: 100,
+      startedAt: syncRun.started_at,
+      finishedAt: syncRun.finished_at,
+      errorMessage: null,
+    };
+  }
+
+  return {
+    status: "failed",
+    progressPercent: null,
+    startedAt: syncRun.started_at,
+    finishedAt: syncRun.finished_at,
+    errorMessage: syncRun.error_message,
+  };
+}
+
+function isStaleRunningSync(syncRun: SyncRunStatusRow) {
+  return (
+    Date.now() - new Date(syncRun.started_at).getTime() >
+    STALE_RUNNING_SYNC_MS
+  );
+}
+
 async function startSyncRun(userId: string) {
   const supabase = createSupabaseAdminClient();
+  const startedAt = new Date().toISOString();
 
   const { data, error } = await supabase
     .from("sync_runs")
@@ -248,6 +390,7 @@ async function startSyncRun(userId: string) {
       user_id: userId,
       provider: null,
       status: "running",
+      started_at: startedAt,
     })
     .select("id")
     .single<SyncRunRow>();
@@ -258,19 +401,18 @@ async function startSyncRun(userId: string) {
     return null;
   }
 
-  return data.id;
+  return {
+    id: data.id,
+    startedAt,
+  };
 }
 
 async function finishSyncRun(
-  syncRunId: string | null,
+  syncRunId: string,
   status: "succeeded" | "failed",
   itemsSynced: number,
   errorMessage?: string,
 ) {
-  if (!syncRunId) {
-    return;
-  }
-
   const supabase = createSupabaseAdminClient();
 
   const { error } = await supabase

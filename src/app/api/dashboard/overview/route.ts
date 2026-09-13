@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDashboardOverview } from "@/server/modules/dashboard/dashboard.service";
 import { AppError } from "@/server/errors/app-error";
 
+export const maxDuration = 60;
+
 export async function GET(request: NextRequest) {
   try {
     const accessToken = request.headers

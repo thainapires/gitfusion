@@ -11,3 +11,11 @@ export type DashboardOverview = {
   topRepositories: RepositorySummary[];
   generatedAt: string;
 };
+
+export type DashboardSyncStatus = {
+  status: "idle" | "syncing" | "synced" | "failed";
+  progressPercent: number | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  errorMessage: string | null;
+};

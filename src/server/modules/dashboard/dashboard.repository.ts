@@ -11,9 +11,17 @@ import { getDashboardCacheExpiration } from "./dashboard.cache";
 
 const DASHBOARD_DAYS = 365;
 
-type CachedOverviewRow = {
+export type CachedOverviewRow = {
   overview: DashboardOverview;
   expires_at: string;
+};
+
+export type SyncRunStatusRow = {
+  id: string;
+  status: "running" | "succeeded" | "failed";
+  started_at: string;
+  finished_at: string | null;
+  error_message: string | null;
 };
 
 export async function readFreshCachedOverview(
@@ -50,6 +58,47 @@ export async function readLatestCachedOverview(userId: string) {
 
   if (error) {
     console.error("Unable to read latest dashboard overview cache", error);
+  }
+
+  return data;
+}
+
+export async function readLatestSyncRun(
+  userId: string,
+): Promise<SyncRunStatusRow | null> {
+  const supabase = createSupabaseAdminClient();
+
+  const { data, error } = await supabase
+    .from("sync_runs")
+    .select("id,status,started_at,finished_at,error_message")
+    .eq("user_id", userId)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<SyncRunStatusRow>();
+
+  if (error) {
+    console.error("Unable to read latest dashboard sync run", error);
+  }
+
+  return data;
+}
+
+export async function readRunningSyncRun(
+  userId: string,
+): Promise<SyncRunStatusRow | null> {
+  const supabase = createSupabaseAdminClient();
+
+  const { data, error } = await supabase
+    .from("sync_runs")
+    .select("id,status,started_at,finished_at,error_message")
+    .eq("user_id", userId)
+    .eq("status", "running")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<SyncRunStatusRow>();
+
+  if (error) {
+    console.error("Unable to read running dashboard sync run", error);
   }
 
   return data;
@@ -158,7 +207,7 @@ export async function markAccountsSynced(
 
       if (error) {
         console.error(
-          `Unable to mark ${provider} account as synced`,
+          "Unable to mark " + provider + " account as synced",
           error,
         );
       }
@@ -176,5 +225,5 @@ function getDashboardStartDateKey() {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
+  return year + "-" + month + "-" + day;
 }
