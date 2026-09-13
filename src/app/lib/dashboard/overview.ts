@@ -16,6 +16,12 @@ type ProviderDashboardData = {
   pullOrMergeRequests: number;
 };
 
+export type StoredDailyTotal = {
+  date: string;
+  github_count: number;
+  gitlab_count: number;
+};
+
 const dashboardDays = 365;
 const gitlabApiBaseUrl = "https://gitlab.com/api/v4";
 
@@ -55,6 +61,57 @@ export async function buildDashboardOverview(accounts: ConnectedAccountRow[]): P
     dailyContributions,
     recentActivity: providerData.flatMap((item) => item.activities).sort(sortActivities).slice(0, 8),
     topRepositories: providerData.flatMap((item) => item.repositories).sort((a, b) => b.contributions - a.contributions).slice(0, 8),
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+export function buildDashboardOverviewFromStoredDailyTotals({
+  providers,
+  rows,
+  fallbackOverview,
+}: {
+  providers: AccountProvider[];
+  rows: StoredDailyTotal[];
+  fallbackOverview?: DashboardOverview | null;
+}): DashboardOverview {
+  const dates = buildDateRange(dashboardDays);
+  const totalsByDate = new Map(rows.map((row) => [row.date, row]));
+  const dailyContributions = dates.map((date) => {
+    const row = totalsByDate.get(date);
+    const github = row?.github_count || 0;
+    const gitlab = row?.gitlab_count || 0;
+
+    return {
+      date,
+      total: github + gitlab,
+      platforms: { github, gitlab },
+    };
+  });
+  const githubTotal = dailyContributions.reduce((sum, day) => sum + day.platforms.github, 0);
+  const gitlabTotal = dailyContributions.reduce((sum, day) => sum + day.platforms.gitlab, 0);
+  const activeDays = dailyContributions.filter((item) => item.total > 0).length;
+  const currentStreak = getCurrentStreak(dailyContributions);
+  const topRepositories = fallbackOverview?.topRepositories || [];
+  const recentActivity = fallbackOverview?.recentActivity || [];
+  const pullOrMergeRequests = readMetricNumber(fallbackOverview, "Pull / merge requests");
+
+  return {
+    hasConnections: providers.length > 0,
+    connectedProviders: providers,
+    metrics: buildMetrics({
+      total: githubTotal + gitlabTotal,
+      githubTotal,
+      gitlabTotal,
+      repositories: topRepositories.length,
+      pullOrMergeRequests,
+      currentStreak,
+      activeDays,
+    }),
+    activeDays,
+    currentStreak,
+    dailyContributions,
+    recentActivity,
+    topRepositories,
     generatedAt: new Date().toISOString(),
   };
 }
@@ -378,16 +435,6 @@ function getCurrentStreak(days: DashboardOverview["dailyContributions"]) {
   return firstInactiveIndex === -1 ? activeDays.length : firstInactiveIndex;
 }
 
-function startOfLocalDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function addDays(date: Date, days: number) {
-  const nextDate = new Date(date);
-  nextDate.setDate(nextDate.getDate() + days);
-  return nextDate;
-}
-
 function formatDateKey(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -405,6 +452,16 @@ function timeRank(value: string) {
   if (value.includes("hour")) return 2;
   if (value === "Yesterday") return 3;
   return 4;
+}
+
+function readMetricNumber(overview: DashboardOverview | null | undefined, label: string) {
+  const metric = overview?.metrics.find((item) => item.label === label);
+
+  if (!metric) {
+    return 0;
+  }
+
+  return Number(metric.value.replace(/[^\d]/g, "")) || 0;
 }
 
 function scoreRecentDate(value: string | null) {

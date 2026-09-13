@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeCodeForToken, fetchProviderProfile, isIntegrationProvider } from "../../../../lib/integrations/providers";
+import { encryptProviderToken } from "../../../../lib/security/tokens";
 import { createSupabaseAdminClient, isSupabaseServerConfigured } from "../../../../lib/supabase/server";
 
 type RouteContext = {
@@ -77,8 +78,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       username: profile.username,
       display_name: profile.displayName,
       avatar_url: profile.avatarUrl,
-      access_token: tokenData.access_token,
-      refresh_token: tokenData.refresh_token || null,
+      access_token_encrypted: encryptProviderToken(tokenData.access_token),
+      refresh_token_encrypted: encryptProviderToken(tokenData.refresh_token),
       token_type: tokenData.token_type || null,
       scopes: tokenData.scope ? tokenData.scope.split(/[ ,]+/).filter(Boolean) : [],
       expires_at: expiresAt,

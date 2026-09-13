@@ -127,24 +127,6 @@ function getCurrentStreak(days: DashboardOverview["dailyContributions"]) {
   return firstInactiveIndex === -1 ? activeDays.length : firstInactiveIndex;
 }
 
-function startOfLocalDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function addDays(date: Date, days: number) {
-  const nextDate = new Date(date);
-  nextDate.setDate(nextDate.getDate() + days);
-  return nextDate;
-}
-
-function formatDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
 function DashboardLoading() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
