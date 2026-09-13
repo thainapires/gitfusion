@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { exchangeCodeForToken, fetchProviderProfile, isIntegrationProvider } from "../../../../lib/integrations/providers";
-import { encryptProviderToken } from "../../../../lib/security/tokens";
-import { createSupabaseAdminClient, isSupabaseServerConfigured } from "../../../../lib/supabase/server";
+import { exchangeCodeForToken, fetchProviderProfile, isIntegrationProvider } from "../../../../../lib/integrations/providers";
+import { encryptProviderToken } from "../../../../../lib/security/tokens";
+import { createSupabaseAdminClient, isSupabaseServerConfigured } from "../../../../../lib/supabase/server";
 
 type RouteContext = {
   params: Promise<{ provider: string }>;

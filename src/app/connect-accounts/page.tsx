@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FaCodeMerge } from "react-icons/fa6";
-import { IntegrationAccountsPanel } from "../components/accounts/integration-accounts-panel";
+import { IntegrationAccountsPanel } from "../../components/accounts/integration-accounts-panel";
 
 export default function ConnectAccountsPage() {
   return (

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AccountProvider } from "../../../types/mock-app";
-import { DashboardOverview } from "../../../types/dashboard";
-import { buildDashboardOverview, buildDashboardOverviewFromStoredDailyTotals, StoredDailyTotal } from "../../../lib/dashboard/overview";
-import { decryptProviderToken } from "../../../lib/security/tokens";
-import { createSupabaseAdminClient, createSupabaseUserServerClient, isSupabaseServerConfigured } from "../../../lib/supabase/server";
+import { AccountProvider } from "../../../../types/mock-app";
+import { DashboardOverview } from "../../../../types/dashboard";
+import { buildDashboardOverview, buildDashboardOverviewFromStoredDailyTotals, StoredDailyTotal } from "../../../../lib/dashboard/overview";
+import { decryptProviderToken } from "../../../../lib/security/tokens";
+import { createSupabaseAdminClient, createSupabaseUserServerClient, isSupabaseServerConfigured } from "../../../../lib/supabase/server";
 
 type ConnectedAccountRow = {
   provider: AccountProvider;

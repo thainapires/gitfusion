@@ -2,18 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { FiRefreshCw } from "react-icons/fi";
-import { IntegrationAccountsPanel } from "../components/accounts/integration-accounts-panel";
-import { AuthenticatedLayout } from "../components/app-shell/authenticated-layout";
-import { ActivityList } from "../components/dashboard-overview/activity-list";
-import { ContributionChart } from "../components/dashboard-overview/contribution-chart";
-import { MetricCard } from "../components/dashboard-overview/metric-card";
-import { RepositoryTable } from "../components/dashboard-overview/repository-table";
-import { readApiJson } from "../lib/api/response";
-import { notify } from "../lib/notifications/toast";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "../lib/supabase/client";
-import { mockUser } from "../mocks/user";
-import { DashboardOverview } from "../types/dashboard";
-import { KeepGoingCard } from "../components/dashboard-overview/keep-going-card";
+import { IntegrationAccountsPanel } from "../../components/accounts/integration-accounts-panel";
+import { AuthenticatedLayout } from "../../components/app-shell/authenticated-layout";
+import { ActivityList } from "../../components/dashboard-overview/activity-list";
+import { ContributionChart } from "../../components/dashboard-overview/contribution-chart";
+import { MetricCard } from "../../components/dashboard-overview/metric-card";
+import { RepositoryTable } from "../../components/dashboard-overview/repository-table";
+import { readApiJson } from "../../lib/api/response";
+import { notify } from "../../lib/notifications/toast";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
+import { mockUser } from "../../mocks/user";
+import { DashboardOverview } from "../../types/dashboard";
+import { KeepGoingCard } from "../../components/dashboard-overview/keep-going-card";
 
 export default function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);

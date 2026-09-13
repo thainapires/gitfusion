@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildAuthorizationUrl, isIntegrationProvider } from "../../../../lib/integrations/providers";
-import { createSupabaseAdminClient, createSupabaseUserServerClient, isSupabaseServerConfigured } from "../../../../lib/supabase/server";
+import { buildAuthorizationUrl, isIntegrationProvider } from "../../../../../lib/integrations/providers";
+import { createSupabaseAdminClient, createSupabaseUserServerClient, isSupabaseServerConfigured } from "../../../../../lib/supabase/server";
 
 type RouteContext = {
   params: Promise<{ provider: string }>;
