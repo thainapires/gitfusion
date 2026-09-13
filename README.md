@@ -4,7 +4,7 @@
 
 Git Fusion is a Next.js app that brings GitHub and GitLab activity into one authenticated dashboard. Users can sign up, connect their provider accounts through OAuth, and view consolidated contribution insights without relying on personal access tokens in the browser. More providers are planned to the future.
 
-Try it out: [https://gitfusion.vercel.app](https://gitfusion.vercel.app)
+Try it out: [https://gitfusion.thaipires.com](https://gitfusion.thaipires.com)
 
 ## Features
 
