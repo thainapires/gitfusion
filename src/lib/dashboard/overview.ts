@@ -346,13 +346,11 @@ async function fetchGitLabEvents(account: ConnectedAccountRow, since: string) {
   );
 }
 
-async function fetchAllGitLabPages<T>(path: string, accessToken: string, maxPages = 20) {
+async function fetchAllGitLabPages<T>(path: string, accessToken: string) {
   const items: T[] = [];
   let nextPath: string | null = path;
-  let pageCount = 0;
 
-  while (nextPath && pageCount < maxPages) {
-    pageCount += 1;
+  while (nextPath) {
     const response: Response = await fetch(`${gitlabApiBaseUrl}${nextPath}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });

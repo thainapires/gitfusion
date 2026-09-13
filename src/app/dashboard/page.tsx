@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { FiRefreshCw } from "react-icons/fi";
+import {
+  FiAlertCircle,
+  FiCheckCircle,
+  FiClock,
+  FiRefreshCw,
+} from "react-icons/fi";
 import { IntegrationAccountsPanel } from "../../components/accounts/integration-accounts-panel";
 import { AuthenticatedLayout } from "../../components/app-shell/authenticated-layout";
 import { ActivityList } from "../../components/dashboard-overview/activity-list";
@@ -11,17 +16,30 @@ import { RepositoryTable } from "../../components/dashboard-overview/repository-
 import { readApiJson } from "../../lib/api/response";
 import { notify } from "../../lib/notifications/toast";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { DashboardOverview } from "../../types/dashboard";
+import {
+  DashboardOverview,
+  DashboardSyncStatus,
+} from "../../types/dashboard";
 import { KeepGoingCard } from "../../components/dashboard-overview/keep-going-card";
 
 export default function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [syncStatus, setSyncStatus] = useState<DashboardSyncStatus | null>(null);
   const [viewerName, setViewerName] = useState("there");
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadOverview = useCallback(async (options?: { refresh?: boolean }) => {
+  const loadOverview = useCallback(async (options?: { refresh?: boolean; silent?: boolean }) => {
+    const showLoading = !options?.silent && !options?.refresh;
+
     try {
-      setIsLoading(true);
+      if (showLoading) {
+        setIsLoading(true);
+      }
+
+      if (options?.refresh) {
+        setIsRefreshing(true);
+      }
 
       if (!isSupabaseConfigured()) {
         throw new Error("Configure Supabase to load dashboard data.");
@@ -45,22 +63,34 @@ export default function DashboardPage() {
       const fullName = profile?.full_name || metadataName || user.email || "there";
       setViewerName(getFirstName(fullName));
 
-      const response = await fetch(`/api/dashboard/overview${options?.refresh ? "?refresh=1" : ""}`, {
+      const url = "/api/dashboard/overview" + (options?.refresh ? "?refresh=1" : "");
+      const response = await fetch(url, {
         headers: {
-          Authorization: `Bearer ${data.session.access_token}`,
+          Authorization: "Bearer " + data.session.access_token,
         },
       });
-      const result = await readApiJson<{ overview?: DashboardOverview; error?: string }>(response);
+      const result = await readApiJson<{
+        overview?: DashboardOverview;
+        sync?: DashboardSyncStatus;
+        error?: string;
+      }>(response);
 
       if (!response.ok || !result.overview) {
         throw new Error(result.error || "Unable to load dashboard data.");
       }
 
       setOverview(result.overview);
+      setSyncStatus(result.sync ?? null);
     } catch (error) {
       notify({ type: "error", title: "Dashboard data failed", message: error instanceof Error ? error.message : "Unable to load dashboard data." });
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
+
+      if (options?.refresh) {
+        setIsRefreshing(false);
+      }
     }
   }, []);
 
@@ -71,20 +101,36 @@ export default function DashboardPage() {
     return () => window.removeEventListener("gitfusion:integrations-changed", reloadOverview);
   }, [loadOverview]);
 
+  useEffect(() => {
+    if (syncStatus?.status !== "syncing") {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      loadOverview({ silent: true });
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [loadOverview, syncStatus?.status]);
+
   const activeDays = overview?.dailyContributions.filter((day) => day.total > 0).length ?? 0;
   const currentStreak = overview ? getCurrentStreak(overview.dailyContributions) : 0;
 
   return (
     <AuthenticatedLayout
-      title={`Good to see you again, ${viewerName}`}
+      title={"Good to see you again, " + viewerName}
       description="Here is your connected GitHub and GitLab activity overview."
       actions={
         <button
           type="button"
           onClick={() => loadOverview({ refresh: true })}
-          className="hidden sm:inline-flex h-10 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-bold text-muted-foreground transition hover:border-primary hover:text-primary dark:border-gray-800"
+          disabled={isRefreshing}
+          className="hidden sm:inline-flex h-10 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-bold text-muted-foreground transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-800"
         >
-          <FiRefreshCw className="size-4" aria-hidden />
+          <FiRefreshCw
+            className={"size-4 " + (isRefreshing ? "animate-spin" : "")}
+            aria-hidden
+          />
           Refresh
         </button>
       }
@@ -95,7 +141,9 @@ export default function DashboardPage() {
 
       {!isLoading && overview?.hasConnections && (
         <>
-          <div className="space-y-5">
+          <SyncStatusPanel sync={syncStatus} />
+
+          <div className="mt-6 space-y-5">
             <KeepGoingCard
               activeDays={activeDays}
               currentStreak={currentStreak}
@@ -142,6 +190,71 @@ function getCurrentStreak(days: DashboardOverview["dailyContributions"]) {
   const firstInactiveIndex = activeDays.findIndex((day) => day.total <= 0);
 
   return firstInactiveIndex === -1 ? activeDays.length : firstInactiveIndex;
+}
+
+function SyncStatusPanel({ sync }: { sync: DashboardSyncStatus | null }) {
+  if (!sync || sync.status === "idle") {
+    return null;
+  }
+
+  const isSyncing = sync.status === "syncing";
+  const isSynced = sync.status === "synced";
+  const Icon = isSyncing
+    ? FiClock
+    : isSynced
+      ? FiCheckCircle
+      : FiAlertCircle;
+
+  const title = isSyncing
+    ? "Syncing provider data"
+    : isSynced
+      ? "100% synced"
+      : "Last sync failed";
+
+  const detail = isSyncing
+    ? sync.startedAt
+      ? "Started " + formatSyncDate(sync.startedAt)
+      : "Sync in progress"
+    : isSynced
+      ? sync.finishedAt
+        ? "Finished " + formatSyncDate(sync.finishedAt)
+        : "Completed"
+      : sync.errorMessage || "Unable to finish the last sync.";
+
+  return (
+    <section className="rounded-lg border border-gray-200 bg-card px-4 py-3 shadow-sm dark:border-gray-800">
+      <div className="flex min-w-0 items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <Icon
+              className={"size-4 " + (isSyncing ? "animate-pulse" : "")}
+              aria-hidden
+            />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-extrabold text-foreground">
+              {title}
+            </p>
+            <p className="truncate text-xs font-medium text-muted-foreground">
+              {detail}
+            </p>
+          </div>
+        </div>
+        {sync.progressPercent === 100 && (
+          <span className="shrink-0 rounded-md border border-primary/20 px-2 py-1 text-xs font-extrabold text-primary">
+            100%
+          </span>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function formatSyncDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 function DashboardLoading() {
