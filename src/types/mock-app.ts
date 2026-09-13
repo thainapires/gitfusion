@@ -20,7 +20,6 @@ export type MockUser = {
   email: string;
   username: string;
   role: string;
-  avatarUrl: string;
 };
 
 export type DashboardMetric = {

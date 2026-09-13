@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FiLogOut } from "react-icons/fi";
 import type { LandingSessionUser } from "./landing-page";
+import { AppLogo } from "../ui/app-logo";
 
 type LandingNavbarProps = {
   user: LandingSessionUser | null;
@@ -17,45 +18,29 @@ export function LandingNavbar({ user, isCheckingSession, onSignOut }: LandingNav
         className="group flex items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-300"
         aria-label={user ? "Git Fusion dashboard" : "Git Fusion home"}
       >
-        <>
-          <Image
-            src="/images/logo.png"
-            alt=""
-            width={24}
-            height={24}
-            aria-hidden
-            className="size-9 dark:hidden"
-          />
-
-          <Image
-            src="/images/logo-dark.png"
-            alt=""
-            width={24}
-            height={24}
-            aria-hidden
-            className="hidden size-9 dark:block"
-          />
-        </>
+        <AppLogo className="size-9" />
 
         <span className="text-lg font-extrabold tracking-normal text-white sm:text-xl">
           Git Fusion
         </span>
       </Link>
 
-      <div className="flex gap-12">
-        <Link
-          href="/dashboard"
-          className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
-        >
-          Dashboard
-        </Link>
-        <Link
-          href="/settings"
-          className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
-        >
-          Settings
-        </Link>
-      </div>
+      {user && (
+        <div className="flex gap-12">
+          <Link
+            href="/dashboard"
+            className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/settings"
+            className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
+          >
+            Settings
+          </Link>
+        </div>
+      )}
 
       <nav className={`flex items-center ${user ? "" : "gap-3 sm:gap-4"}`} aria-label="Primary navigation">
         {user ? (

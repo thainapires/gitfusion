@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ReactNode } from "react";
-import { FaCodeMerge } from "react-icons/fa6";
+import { AppLogo } from "../ui/app-logo";
 
 type AuthLayoutProps = {
   title: string;
@@ -18,7 +18,7 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
             <div className="relative flex h-full flex-col justify-between">
               <Link href="/" className="flex items-center gap-3 text-lg font-extrabold">
                 <span className="grid size-9 place-items-center border border-emerald-400/40 text-emerald-300">
-                  <FaCodeMerge className="size-5" aria-hidden />
+                  <AppLogo className="size-5" aria-hidden/>
                 </span>
                 Git Fusion
               </Link>
@@ -35,7 +35,7 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
           <div className="p-6 sm:p-10">
             <div className="mx-auto w-full max-w-md">
               <Link href="/" className="mb-8 flex items-center gap-3 font-extrabold lg:hidden">
-                <FaCodeMerge className="size-6 text-primary" aria-hidden />
+                <AppLogo className="size-6" aria-hidden/>
                 Git Fusion
               </Link>
               <div className="mb-8">

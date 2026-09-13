@@ -79,7 +79,7 @@ export function LandingPage() {
         <LandingNavbar user={user} isCheckingSession={isCheckingSession} onSignOut={handleSignOut} />
 
         <section className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-5 pb-8 pt-8 sm:px-8 lg:px-10 lg:pb-24">
-          <div className="grid flex-1 items-center gap-12 lg:grid-cols-[0.86fr_1.14fr] lg:gap-14">
+          <div className="grid flex-1 items-center gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:gap-14">
             <HeroContent isAuthenticated={Boolean(user)} isCheckingSession={isCheckingSession} />
             <HeroIllustration />
           </div>

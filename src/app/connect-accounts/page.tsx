@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { FaCodeMerge } from "react-icons/fa6";
 import { IntegrationAccountsPanel } from "../../components/accounts/integration-accounts-panel";
+import { AppLogo } from "@/components/ui/app-logo";
 
 export default function ConnectAccountsPage() {
   return (
@@ -8,7 +8,7 @@ export default function ConnectAccountsPage() {
       <section className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-3xl items-center justify-center">
         <div className="w-full rounded-lg border border-gray-200 bg-card p-6 shadow-sm dark:border-gray-800 sm:p-8">
           <Link href="/" className="mb-8 flex items-center gap-3 font-extrabold">
-            <FaCodeMerge className="size-6 text-primary" aria-hidden />
+            <AppLogo className="size-6" />
             Git Fusion
           </Link>
 

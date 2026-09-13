@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
-import { FaCodeMerge } from "react-icons/fa6";
 import { FiAward, FiBarChart2, FiChevronLeft, FiChevronRight, FiGitPullRequest, FiGrid, FiLogOut, FiMenu, FiSettings, FiX } from "react-icons/fi";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
 import { mockUser } from "../../mocks/user";
@@ -11,6 +10,7 @@ import { SidebarItem } from "../../types/mock-app";
 import { ThemeToggle } from "../layout/theme-toggle";
 import { Avatar } from "@heroui/react";
 import Image from "next/image";
+import { AppLogo } from "../ui/app-logo";
 
 const sidebarItems: SidebarItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: FiGrid },
@@ -98,7 +98,7 @@ export function AuthenticatedLayout({ title, description, children, actions }: A
 }
 
 function MobileTopbar({ onOpen }: { onOpen: () => void }) {
-  const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(mockUser.avatarUrl || null);
+  const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState(mockUser.name);
 
   useEffect(() => {
@@ -126,7 +126,7 @@ function MobileTopbar({ onOpen }: { onOpen: () => void }) {
       const fullName = profile?.full_name || metadataName || user.email;
 
       setDisplayName(fullName || mockUser.name);
-      setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || mockUser.avatarUrl || null);
+      setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || null);
     };
 
     loadUser();
@@ -136,19 +136,19 @@ function MobileTopbar({ onOpen }: { onOpen: () => void }) {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between sm:border-b sm:border-gray-200 bg-background sm:bg-card px-5 dark:border-gray-800">
-      <Link href="/dashboard" className="order-2 sm:order-1 flex items-center gap-2 text-lg sm:text-md font-extrabold">
-        <FaCodeMerge className="size-6 sm:size-5 text-primary" aria-hidden />
+      <Link href="/dashboard" className="order-2 lg:order-1 flex items-center gap-2 text-lg sm:text-md font-extrabold">
+        <AppLogo className="size-6 sm:size-5" aria-hidden/>
         Git Fusion
       </Link>
       <button
         type="button"
         onClick={onOpen}
-        className="order-1 sm:order-2 grid size-10 place-items-center rounded-md border border-gray-200 text-muted-foreground dark:border-gray-800"
+        className="order-1 lg:order-2 grid size-10 place-items-center rounded-md border border-gray-200 text-muted-foreground dark:border-gray-800"
         aria-label="Open navigation"
       >
         <FiMenu className="size-5" aria-hidden />
       </button>
-      <Avatar className="order-3 sm:hide size-8 shrink-0 overflow-hidden rounded-full">
+      <Avatar className="order-3 lg:hide size-8 shrink-0 overflow-hidden rounded-full">
         <Avatar.Image
           src={displayAvatarUrl || undefined}
           alt={displayName}
@@ -168,7 +168,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNaviga
   const router = useRouter();
   const [displayName, setDisplayName] = useState(mockUser.name);
   const [displayUsername, setDisplayUsername] = useState(mockUser.username);
-  const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(mockUser.avatarUrl || null);
+  const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -196,7 +196,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNaviga
 
       setDisplayName(fullName || mockUser.name);
       setDisplayUsername(user.email || mockUser.username);
-      setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || mockUser.avatarUrl || null);
+      setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || null);
     };
 
     loadUser();
@@ -219,25 +219,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNaviga
     <div className="flex h-full flex-col">
       <div className={`flex h-16 items-center border-b border-gray-200 dark:border-gray-800 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
         <Link href="/dashboard" onClick={onNavigate} className={`flex items-center font-extrabold ${collapsed ? "justify-center" : "gap-3"}`} aria-label="Git Fusion dashboard" title={collapsed ? "Git Fusion" : undefined}>
-          <>
-            <Image
-              src="/images/logo.png"
-              alt=""
-              width={24}
-              height={24}
-              aria-hidden
-              className="size-6 dark:hidden"
-            />
-
-            <Image
-              src="/images/logo-dark.png"
-              alt=""
-              width={24}
-              height={24}
-              aria-hidden
-              className="hidden size-6 dark:block"
-            />
-          </>
+          <AppLogo className="size-6" />
           {!collapsed && "Git Fusion"}
         </Link>
         {onNavigate ? (

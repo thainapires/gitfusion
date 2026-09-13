@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { FaGithub, FaGitlab } from "react-icons/fa6";
 import { FiGitPullRequest, FiGrid, FiRefreshCw, FiSettings } from "react-icons/fi";
+import { AppLogo } from "../ui/app-logo";
 
 const metrics = [
   { label: "Total contributions", value: "2,482", helper: "GitHub 1,420 · GitLab 1,062", trend: "312 active days" },
@@ -9,8 +10,8 @@ const metrics = [
 ];
 
 const repositories = [
-  { name: "thai/gitfusion", platform: "github", language: "TypeScript", contributions: 342, visibility: "Public" },
-  { name: "thai/portfolio", platform: "github", language: "TypeScript", contributions: 288, visibility: "Public" },
+  { name: "jane/gitfusion", platform: "github", language: "TypeScript", contributions: 342, visibility: "Public" },
+  { name: "jane/portfolio", platform: "github", language: "TypeScript", contributions: 288, visibility: "Public" },
   { name: "work/master3", platform: "gitlab", language: "PHP", contributions: 226, visibility: "Private" },
 ];
 
@@ -31,7 +32,7 @@ function PlatformIcon({ platform }: { platform: "github" | "gitlab" }) {
 
 export function HeroIllustration() {
   return (
-    <div className="animate-hero-illustration relative mx-auto mt-10 w-full max-w-[46rem] lg:mt-0">
+    <div className="animate-hero-illustration relative mx-auto w-full max-w-[46rem] lg:mt-0 mb-10 lg:mb-0">
       <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-slate-700/70 bg-[#060d1c]/95 shadow-[0_24px_80px_rgba(0,0,0,0.38)]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_52%_6%,rgba(16,185,129,0.12),transparent_34%),radial-gradient(ellipse_at_82%_82%,rgba(139,92,246,0.12),transparent_32%)]" aria-hidden />
 
@@ -39,14 +40,7 @@ export function HeroIllustration() {
           <div className="grid h-[560px] w-[1000px] grid-cols-[180px_minmax(0,1fr)] bg-[#060d1c] text-white">
             <aside className="flex flex-col border-r border-slate-800/90 bg-slate-950/35 p-5">
               <div className="mb-8 flex items-center gap-2 text-sm font-extrabold">
-                <Image
-                  src="/images/logo.png"
-                  alt=""
-                  width={24}
-                  height={24}
-                  aria-hidden
-                  className="size-6"
-                />
+                <AppLogo className="size-6" />
                 Git Fusion
               </div>
 
@@ -70,15 +64,15 @@ export function HeroIllustration() {
               </nav>
 
               <div className="mt-auto rounded-md bg-slate-950/80 p-3">
-                <div className="text-xs font-extrabold">Thainá Pires</div>
-                <div className="mt-1 truncate text-[0.68rem] font-semibold text-slate-500">thaina@example.com</div>
+                <div className="text-xs font-extrabold">Jane Doe</div>
+                <div className="mt-1 truncate text-[0.68rem] font-semibold text-slate-500">janedoe@example.com</div>
               </div>
             </aside>
 
             <section className="min-w-0 p-6">
               <header className="mb-4 flex items-end justify-between border-b border-slate-800 pb-4">
                 <div>
-                  <h2 className="text-2xl font-extrabold tracking-normal">Good to see you again, Thainá</h2>
+                  <h2 className="text-2xl font-extrabold tracking-normal">Good to see you again, Jane</h2>
                   <p className="mt-1 text-xs font-medium text-slate-400">Here is your connected GitHub and GitLab activity overview.</p>
                 </div>
                 <button className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-700 px-3 text-xs font-extrabold text-slate-300">
@@ -175,9 +169,9 @@ export function HeroIllustration() {
                   <article className="rounded-lg border border-slate-800 bg-slate-900/80 p-4 shadow-sm">
                     <h3 className="text-sm font-extrabold">Recent activity</h3>
                     <div className="mt-3 space-y-3">
-                      <Activity provider="github" title="Pushed commits" repo="thai/gitfusion" />
+                      <Activity provider="github" title="Pushed commits" repo="jane/gitfusion" />
                       <Activity provider="gitlab" title="Opened merge request" repo="work/master3" />
-                      <Activity provider="github" title="Updated pull request" repo="thai/portfolio" />
+                      <Activity provider="github" title="Updated pull request" repo="jane/portfolio" />
                     </div>
                   </article>
                 </aside>
