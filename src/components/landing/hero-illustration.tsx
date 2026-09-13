@@ -64,7 +64,7 @@ export function HeroIllustration() {
               </nav>
 
               <div className="mt-auto rounded-md bg-slate-950/80 p-3">
-                <div className="text-xs font-extrabold">Jane Doe</div>
+                <div className="text-xs font-extrabold">Git Fusion user</div>
                 <div className="mt-1 truncate text-[0.68rem] font-semibold text-slate-500">janedoe@example.com</div>
               </div>
             </aside>
@@ -72,7 +72,7 @@ export function HeroIllustration() {
             <section className="min-w-0 p-6">
               <header className="mb-4 flex items-end justify-between border-b border-slate-800 pb-4">
                 <div>
-                  <h2 className="text-2xl font-extrabold tracking-normal">Good to see you again, Jane</h2>
+                  <h2 className="text-2xl font-extrabold tracking-normal">Good to see you again</h2>
                   <p className="mt-1 text-xs font-medium text-slate-400">Here is your connected GitHub and GitLab activity overview.</p>
                 </div>
                 <button className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-700 px-3 text-xs font-extrabold text-slate-300">
@@ -163,8 +163,8 @@ export function HeroIllustration() {
                 </div>
 
                 <aside className="space-y-3">
-                  <ProviderCard provider="github" name="GitHub" username="mockhub" stats="1,420 contributions" />
-                  <ProviderCard provider="gitlab" name="GitLab" username="mocklab" stats="1,062 contributions" />
+                  <ProviderCard provider="github" name="GitHub" username="github-user" stats="1,420 contributions" />
+                  <ProviderCard provider="gitlab" name="GitLab" username="gitlab-user" stats="1,062 contributions" />
 
                   <article className="rounded-lg border border-slate-800 bg-slate-900/80 p-4 shadow-sm">
                     <h3 className="text-sm font-extrabold">Recent activity</h3>

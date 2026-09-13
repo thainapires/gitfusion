@@ -11,12 +11,12 @@ import { RepositoryTable } from "../../components/dashboard-overview/repository-
 import { readApiJson } from "../../lib/api/response";
 import { notify } from "../../lib/notifications/toast";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { mockUser } from "../../mocks/user";
 import { DashboardOverview } from "../../types/dashboard";
 import { KeepGoingCard } from "../../components/dashboard-overview/keep-going-card";
 
 export default function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [viewerName, setViewerName] = useState("there");
   const [isLoading, setIsLoading] = useState(true);
 
   const loadOverview = useCallback(async (options?: { refresh?: boolean }) => {
@@ -33,6 +33,17 @@ export default function DashboardPage() {
       if (!data.session) {
         return;
       }
+
+      const user = data.session.user;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle<{ full_name: string | null }>();
+
+      const metadataName = typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name : "";
+      const fullName = profile?.full_name || metadataName || user.email || "there";
+      setViewerName(getFirstName(fullName));
 
       const response = await fetch(`/api/dashboard/overview${options?.refresh ? "?refresh=1" : ""}`, {
         headers: {
@@ -65,7 +76,7 @@ export default function DashboardPage() {
 
   return (
     <AuthenticatedLayout
-      title={`Good to see you again, ${mockUser.name.split(" ")[0]}`}
+      title={`Good to see you again, ${viewerName}`}
       description="Here is your connected GitHub and GitLab activity overview."
       actions={
         <button
@@ -110,6 +121,12 @@ export default function DashboardPage() {
       )}
     </AuthenticatedLayout>
   );
+}
+
+function getFirstName(value: string) {
+  const firstName = value.trim().split(/\s+/).filter(Boolean)[0];
+
+  return firstName || "there";
 }
 
 function getCurrentStreak(days: DashboardOverview["dailyContributions"]) {
