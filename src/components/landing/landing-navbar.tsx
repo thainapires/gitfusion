@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { FiLogOut } from "react-icons/fi";
 import type { LandingSessionUser } from "./landing-page";

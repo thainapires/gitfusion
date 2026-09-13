@@ -36,7 +36,7 @@ export function ContributionChart({ data }: { data: DailyContribution[] }) {
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h2 className="text-lg font-extrabold">Contribution graph</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Daily mocked activity across connected platforms.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Daily activity across connected platforms.</p>
         </div>
         <div className="flex flex-wrap gap-4 text-xs font-bold text-muted-foreground">
           <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-slate-900 dark:bg-slate-200" />GitHub</span>

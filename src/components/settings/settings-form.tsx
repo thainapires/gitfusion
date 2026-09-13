@@ -5,7 +5,6 @@ import { IntegrationAccountsPanel } from "../accounts/integration-accounts-panel
 import { notify } from "../../lib/notifications/toast";
 import { uploadUserAvatar } from "../../lib/supabase/avatar";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { mockUser } from "../../mocks/user";
 
 type ProfileFormState = {
   name: string;
@@ -17,10 +16,10 @@ type ProfileFormState = {
 
 export function SettingsForm() {
   const [profile, setProfile] = useState<ProfileFormState>({
-    name: mockUser.name,
-    username: mockUser.username,
-    email: mockUser.email,
-    role: mockUser.role,
+    name: "",
+    username: "",
+    email: "",
+    role: "",
     avatarUrl: null,
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -66,10 +65,10 @@ export function SettingsForm() {
         }
 
         setProfile({
-          name: profileData?.full_name || getStringMetadata(user.user_metadata.full_name) || mockUser.name,
-          username: user.email?.split("@")[0] || mockUser.username,
-          email: user.email || mockUser.email,
-          role: getStringMetadata(user.user_metadata.role) || mockUser.role,
+          name: profileData?.full_name || getStringMetadata(user.user_metadata.full_name) || user.email?.split("@")[0] || "",
+          username: getStringMetadata(user.user_metadata.username) || user.email?.split("@")[0] || "",
+          email: user.email || "",
+          role: getStringMetadata(user.user_metadata.role),
           avatarUrl: profileData?.avatar_url || getStringMetadata(user.user_metadata.avatar_url) || null,
         });
       } catch (error) {

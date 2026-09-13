@@ -132,7 +132,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       {isSignUp && (
         <>
           <AvatarField previewUrl={avatarPreview} onChange={handleAvatarChange} />
-          <Field id="name" label="Name" type="text" autoComplete="name" placeholder="Jane Doe" />
+          <Field id="name" label="Name" type="text" autoComplete="name" placeholder="Your name" />
         </>
       )}
       <Field id="email" label="Email" type="email" autoComplete="email" placeholder="email@example.com" />

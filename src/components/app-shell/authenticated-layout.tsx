@@ -5,11 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { FiAward, FiBarChart2, FiChevronLeft, FiChevronRight, FiGitPullRequest, FiGrid, FiLogOut, FiMenu, FiSettings, FiX } from "react-icons/fi";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { mockUser } from "../../mocks/user";
 import { SidebarItem } from "../../types/mock-app";
 import { ThemeToggle } from "../layout/theme-toggle";
 import { Avatar } from "@heroui/react";
-import Image from "next/image";
 import { AppLogo } from "../ui/app-logo";
 
 const sidebarItems: SidebarItem[] = [
@@ -99,7 +97,7 @@ export function AuthenticatedLayout({ title, description, children, actions }: A
 
 function MobileTopbar({ onOpen }: { onOpen: () => void }) {
   const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState(mockUser.name);
+  const [displayName, setDisplayName] = useState("Git Fusion user");
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -125,7 +123,7 @@ function MobileTopbar({ onOpen }: { onOpen: () => void }) {
       const metadataAvatarUrl = typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : "";
       const fullName = profile?.full_name || metadataName || user.email;
 
-      setDisplayName(fullName || mockUser.name);
+      setDisplayName(fullName || "Git Fusion user");
       setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || null);
     };
 
@@ -166,8 +164,8 @@ function MobileTopbar({ onOpen }: { onOpen: () => void }) {
 function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNavigate?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [displayName, setDisplayName] = useState(mockUser.name);
-  const [displayUsername, setDisplayUsername] = useState(mockUser.username);
+  const [displayName, setDisplayName] = useState("Git Fusion user");
+  const [displayUsername, setDisplayUsername] = useState("");
   const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -194,8 +192,8 @@ function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNaviga
       const metadataAvatarUrl = typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : "";
       const fullName = profile?.full_name || metadataName || user.email;
 
-      setDisplayName(fullName || mockUser.name);
-      setDisplayUsername(user.email || mockUser.username);
+      setDisplayName(fullName || "Git Fusion user");
+      setDisplayUsername(user.email || "");
       setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || null);
     };
 

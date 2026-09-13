@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import { readApiJson } from "../../lib/api/response";
 import { notify } from "../../lib/notifications/toast";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { mockAccounts } from "../../mocks/accounts";
 import { AccountProvider, ConnectedAccount } from "../../types/mock-app";
 import { AccountConnectionCard } from "./account-connection-card";
 import { TbLayoutDashboard } from "react-icons/tb";
@@ -25,8 +24,31 @@ type IntegrationAccountsPanelProps = {
   redirectTo?: string;
 };
 
+const providerAccounts: ConnectedAccount[] = [
+  {
+    provider: "github",
+    name: "GitHub",
+    username: "",
+    email: "",
+    status: "not-connected",
+    repositories: 0,
+    contributions: 0,
+    lastSync: "Not synced yet",
+  },
+  {
+    provider: "gitlab",
+    name: "GitLab",
+    username: "",
+    email: "",
+    status: "not-connected",
+    repositories: 0,
+    contributions: 0,
+    lastSync: "Not synced yet",
+  },
+];
+
 export function IntegrationAccountsPanel({ compact = false, showContinue = false, redirectTo = "/connect-accounts" }: IntegrationAccountsPanelProps) {
-  const [accounts, setAccounts] = useState<ConnectedAccount[]>(mockAccounts);
+  const [accounts, setAccounts] = useState<ConnectedAccount[]>(() => buildAccounts([]));
 
   const loadAccounts = useCallback(async () => {
     if (!isSupabaseConfigured()) {
@@ -181,7 +203,7 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
 }
 
 function buildAccounts(connectedAccounts: ConnectedAccountResponse[]): ConnectedAccount[] {
-  return mockAccounts.map((account) => {
+  return providerAccounts.map((account) => {
     const connectedAccount = connectedAccounts.find((item) => item.provider === account.provider);
 
     if (!connectedAccount) {
@@ -194,8 +216,22 @@ function buildAccounts(connectedAccounts: ConnectedAccountResponse[]): Connected
       status: "connected",
       repositories: 0,
       contributions: 0,
-      lastSync: "Not synced yet",
+      lastSync: formatLastSync(connectedAccount.updated_at || connectedAccount.connected_at),
     };
+  });
+}
+
+function formatLastSync(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Not synced yet";
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
