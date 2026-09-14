@@ -2,20 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { FiRefreshCw } from "react-icons/fi";
-import { IntegrationAccountsPanel } from "../../components/accounts/integration-accounts-panel";
-import { AuthenticatedLayout } from "../../components/app-shell/authenticated-layout";
-import { ActivityList } from "../../components/dashboard-overview/activity-list";
-import { ContributionChart } from "../../components/dashboard-overview/contribution-chart";
-import { MetricCard } from "../../components/dashboard-overview/metric-card";
-import { RepositoryTable } from "../../components/dashboard-overview/repository-table";
-import { readApiJson } from "../../lib/api/response";
-import { notify } from "../../lib/notifications/toast";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
+import { IntegrationAccountsPanel } from "@/features/integrations/components/integration-accounts-panel";
+import { AuthenticatedLayout } from "@/shared/app-shell/authenticated-layout";
+import { ActivityList } from "@/features/dashboard/components/activity-list";
+import { ContributionChart } from "@/features/dashboard/components/contribution-chart";
+import { MetricCard } from "@/features/dashboard/components/metric-card";
+import { RepositoryTable } from "@/features/dashboard/components/repository-table";
+import { readApiJson } from "@/lib/api/response";
+import { notify } from "@/lib/notifications/toast";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import {
   DashboardOverview,
   DashboardSyncStatus,
-} from "../../types/dashboard";
-import { KeepGoingCard } from "../../components/dashboard-overview/keep-going-card";
+} from "@/types/dashboard";
+import { KeepGoingCard } from "@/features/dashboard/components/keep-going-card";
 
 export default function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);

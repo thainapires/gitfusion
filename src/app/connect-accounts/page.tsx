@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { IntegrationAccountsPanel } from "../../components/accounts/integration-accounts-panel";
-import { AppLogo } from "@/components/ui/app-logo";
+import { IntegrationAccountsPanel } from "@/features/integrations/components/integration-accounts-panel";
+import { AppLogo } from "@/shared/components/app-logo";
 
 export default function ConnectAccountsPage() {
   return (

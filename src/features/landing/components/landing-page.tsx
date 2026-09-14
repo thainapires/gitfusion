@@ -5,7 +5,7 @@ import { HeroContent } from "./hero-content";
 import { HeroHighlights } from "./hero-highlights";
 import { HeroIllustration } from "./hero-illustration";
 import { LandingNavbar } from "./landing-navbar";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export type LandingSessionUser = {
   name: string;

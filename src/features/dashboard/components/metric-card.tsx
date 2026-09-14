@@ -1,4 +1,4 @@
-import { DashboardMetric } from "../../types/mock-app";
+import { DashboardMetric } from "@/types/mock-app";
 
 export function MetricCard({ metric }: { metric: DashboardMetric }) {
   return (

@@ -5,11 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { FaGithub, FaGitlab } from "react-icons/fa";
 import { FiAlertCircle, FiAward, FiBarChart2, FiCalendar, FiCheckCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiClock, FiGitPullRequest, FiGrid, FiLogOut, FiMenu, FiSettings, FiX } from "react-icons/fi";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { AccountProvider, SidebarItem } from "../../types/mock-app";
-// import { ThemeToggle } from "../layout/theme-toggle";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { AccountProvider, SidebarItem } from "@/types/mock-app";
+// import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Avatar } from "@heroui/react";
-import { AppLogo } from "../ui/app-logo";
+import { AppLogo } from "@/shared/components/app-logo";
 import { DashboardSyncStatus } from "@/types/dashboard";
 
 const sidebarItems: SidebarItem[] = [

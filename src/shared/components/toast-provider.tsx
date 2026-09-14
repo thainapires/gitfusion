@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiAlertCircle, FiAlertTriangle, FiCheckCircle, FiInfo, FiX } from "react-icons/fi";
-import { ToastPayload, ToastType, toastEventName } from "../../lib/notifications/toast";
+import { ToastPayload, ToastType, toastEventName } from "@/lib/notifications/toast";
 
 type ToastItem = Required<Pick<ToastPayload, "type" | "duration">> & {
   id: string;

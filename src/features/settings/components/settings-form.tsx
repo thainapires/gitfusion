@@ -1,10 +1,10 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { IntegrationAccountsPanel } from "../accounts/integration-accounts-panel";
-import { notify } from "../../lib/notifications/toast";
-import { uploadUserAvatar } from "../../lib/supabase/avatar";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
+import { IntegrationAccountsPanel } from "@/features/integrations/components/integration-accounts-panel";
+import { notify } from "@/lib/notifications/toast";
+import { uploadUserAvatar } from "@/lib/supabase/avatar";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 type ProfileFormState = {
   name: string;

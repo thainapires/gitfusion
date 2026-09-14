@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { uploadUserAvatar } from "../../lib/supabase/avatar";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { uploadUserAvatar } from "@/lib/supabase/avatar";
 
 type AuthMode = "sign-in" | "sign-up";
 

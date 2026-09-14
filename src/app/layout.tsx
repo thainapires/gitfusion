@@ -1,7 +1,7 @@
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import { ToastProvider } from "../components/notifications/toast-provider";
+import { ToastProvider } from "@/shared/components/toast-provider";
 import { Manrope, Noto_Color_Emoji } from "next/font/google";
 import "./globals.css";
 

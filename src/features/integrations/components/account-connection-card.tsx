@@ -1,7 +1,7 @@
 "use client";
 
 import { FaGithub, FaGitlab } from "react-icons/fa";
-import { ConnectedAccount } from "../../types/mock-app";
+import { ConnectedAccount } from "@/types/mock-app";
 
 type AccountConnectionCardProps = {
   account: ConnectedAccount;

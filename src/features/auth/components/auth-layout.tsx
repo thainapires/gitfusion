@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ReactNode } from "react";
-import { AppLogo } from "../ui/app-logo";
+import { AppLogo } from "@/shared/components/app-logo";
 
 type AuthLayoutProps = {
   title: string;

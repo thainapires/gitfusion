@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { FaGithub, FaGitlab } from "react-icons/fa6";
 import { FiGitPullRequest, FiGrid, FiRefreshCw, FiSettings } from "react-icons/fi";
-import { AppLogo } from "../ui/app-logo";
+import { AppLogo } from "@/shared/components/app-logo";
 
 const metrics = [
   { label: "Total contributions", value: "2,482", helper: "GitHub 1,420 · GitLab 1,062", trend: "312 active days" },

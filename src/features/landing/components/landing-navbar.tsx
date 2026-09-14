@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FiLogOut } from "react-icons/fi";
 import type { LandingSessionUser } from "./landing-page";
-import { AppLogo } from "../ui/app-logo";
+import { AppLogo } from "@/shared/components/app-logo";
 
 type LandingNavbarProps = {
   user: LandingSessionUser | null;
