@@ -4,7 +4,7 @@ import { SVGAttributes } from "react";
 import CalendarHeatmap, { ReactCalendarHeatmapValue } from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import { Tooltip } from "react-tooltip";
-import { DailyContribution } from "../../types/mock-app";
+import { DailyContribution } from "@/types/mock-app";
 
 type CalendarContribution = ReactCalendarHeatmapValue<Date> & Omit<DailyContribution, "date">;
 

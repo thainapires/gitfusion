@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { readApiJson } from "../../lib/api/response";
-import { notify } from "../../lib/notifications/toast";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase/client";
-import { AccountProvider, ConnectedAccount } from "../../types/mock-app";
+import { readApiJson } from "@/lib/api/response";
+import { notify } from "@/lib/notifications/toast";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { AccountProvider, ConnectedAccount } from "@/types/mock-app";
 import { AccountConnectionCard } from "./account-connection-card";
 import { TbLayoutDashboard } from "react-icons/tb";
 

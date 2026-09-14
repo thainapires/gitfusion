@@ -1,5 +1,5 @@
 import { FaGithub, FaGitlab } from "react-icons/fa";
-import { RepositorySummary } from "../../types/mock-app";
+import { RepositorySummary } from "@/types/mock-app";
 
 export function RepositoryTable({ repositories }: { repositories: RepositorySummary[] }) {
   return (

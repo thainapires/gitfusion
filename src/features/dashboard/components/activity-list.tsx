@@ -1,5 +1,5 @@
 import { FaGithub, FaGitlab } from "react-icons/fa";
-import { ActivityItem } from "../../types/mock-app";
+import { ActivityItem } from "@/types/mock-app";
 
 export function ActivityList({ activities }: { activities: ActivityItem[] }) {
   return (

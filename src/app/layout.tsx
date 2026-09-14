@@ -1,7 +1,7 @@
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import { ToastProvider } from "../components/notifications/toast-provider";
+import { ToastProvider } from "@/shared/components/toast-provider";
 import { Manrope, Noto_Color_Emoji } from "next/font/google";
 import "./globals.css";
 
@@ -29,7 +29,7 @@ export default function RootLayout({children}: Readonly<{children: React.ReactNo
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${manrope.variable} ${notoColorEmoji.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}>
+        <ThemeProvider attribute="class" forcedTheme="dark" defaultTheme="dark" enableSystem={false}>
           <ToastProvider>
             {children}
             <Analytics />

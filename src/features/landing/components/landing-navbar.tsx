@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FiLogOut } from "react-icons/fi";
 import type { LandingSessionUser } from "./landing-page";
-import { AppLogo } from "../ui/app-logo";
+import { AppLogo } from "@/shared/components/app-logo";
 
 type LandingNavbarProps = {
   user: LandingSessionUser | null;
@@ -46,7 +46,7 @@ export function LandingNavbar({ user, isCheckingSession, onSignOut }: LandingNav
           <>
             <Link
               href="/dashboard"
-              className="flex min-w-0 items-center gap-2 rounded-md bg-slate-950/35 py-1.5 text-sm font-extrabold text-white transition"
+              className="flex min-w-0 items-center gap-2 rounded-md py-1.5 text-sm font-extrabold text-white transition"
               aria-label={`Open dashboard for ${user.name}`}
             >
               <span

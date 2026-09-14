@@ -1,7 +1,7 @@
 "use client";
 
 import { FaGithub, FaGitlab } from "react-icons/fa";
-import { ConnectedAccount } from "../../types/mock-app";
+import { ConnectedAccount } from "@/types/mock-app";
 
 type AccountConnectionCardProps = {
   account: ConnectedAccount;
@@ -39,7 +39,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
                 : onConnect(account.provider)
             }
             disabled={isConnecting}
-            className={`w-full rounded-md px-3 py-2 text-sm font-extrabold text-white transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${
+            className={`w-full rounded-md px-3 py-2 text-sm font-extrabold text-white transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${
               isConnected
                 ? "bg-rose-500 hover:bg-rose-600"
                 : "bg-emerald-500 hover:bg-emerald-600"

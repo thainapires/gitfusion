@@ -1,5 +1,5 @@
-import { AuthenticatedLayout } from "../../components/app-shell/authenticated-layout";
-import { SettingsForm } from "../../components/settings/settings-form";
+import { AuthenticatedLayout } from "@/shared/app-shell/authenticated-layout";
+import { SettingsForm } from "@/features/settings/components/settings-form";
 
 export default function SettingsPage() {
   return (
