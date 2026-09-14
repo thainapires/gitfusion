@@ -84,7 +84,7 @@ export function AuthenticatedLayout({ title, description, children, actions, syn
         </aside>
         <main className="min-w-0 flex-1 overflow-x-hidden py-3 px-6 lg:px-8">
           <div className="mx-auto w-full min-w-0">
-            <header className="flex flex-col gap-4 xl:pb-5 xl:flex-row xl:items-end xl:justify-between">
+            <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between md:mt-3">
               <div className="min-w-0">
                 <p className="hidden sm:block text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Dashboard</p>
                 <h1 className="mt-1 text-3xl font-semibold sm:font-extrabold tracking-normal sm:text-3xl">{title}</h1>
