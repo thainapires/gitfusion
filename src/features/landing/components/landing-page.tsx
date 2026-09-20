@@ -130,6 +130,15 @@ function LandingActions({ isAuthenticated, isCheckingSession, className = "" }: 
         {isAuthenticated ? "Go to dashboard" : "Get Started Free"}
         <FiArrowRight className="size-4" aria-hidden />
       </Link>
+      {!isAuthenticated && (
+        <Link
+          href="/demo"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-white/20 bg-white/5 px-5 text-sm font-extrabold text-white transition hover:border-primary/45 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          <FiPlayCircle className="size-4" aria-hidden />
+          View live demo
+        </Link>
+      )}
     </div>
   );
 }
@@ -300,9 +309,9 @@ function OpenSourceSection() {
             <FaGithub className="size-4" aria-hidden />
             View on GitHub
           </Link>
-          <Link href="#about" className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-white/15 px-5 text-sm font-extrabold text-white transition hover:border-primary/50 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          {/* <Link href="#about" className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-white/15 px-5 text-sm font-extrabold text-white transition hover:border-primary/50 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
             Our story
-          </Link>
+          </Link> */}
         </div>
       </div>
     </section>
@@ -347,9 +356,6 @@ function LandingFooter() {
 
         <div className="flex items-center gap-4 text-slate-300">
           <Link href={repositoryUrl} target="_blank" rel="noreferrer" aria-label="GitHub" className="transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"><FaGithub className="size-5" /></Link>
-          <span aria-label="X" className="text-slate-600"><FaXTwitter className="size-5" /></span>
-          <span aria-label="LinkedIn" className="text-slate-600"><FaLinkedin className="size-5" /></span>
-          <span aria-label="Email" className="text-slate-600"><FiMail className="size-5" /></span>
         </div>
       </div>
     </footer>

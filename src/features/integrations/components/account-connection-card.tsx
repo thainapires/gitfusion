@@ -9,9 +9,10 @@ type AccountConnectionCardProps = {
   onConnect: (provider: ConnectedAccount["provider"]) => void;
   onDisconnect?: (provider: ConnectedAccount["provider"]) => void;
   compact?: boolean;
+  readOnly?: boolean;
 };
 
-export function AccountConnectionCard({ account, onConnect, onDisconnect, compact = false }: AccountConnectionCardProps) {
+export function AccountConnectionCard({ account, onConnect, onDisconnect, compact = false, readOnly = false }: AccountConnectionCardProps) {
   const isConnected = account.status === "connected";
   const isConnecting = account.status === "connecting";
   const Icon = account.provider === "github" ? FaGithub : FaGitlab;
@@ -35,7 +36,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
           {isConnected ? (
             <>
               <span className={`rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-extrabold text-emerald-400`}>Connected</span>
-              <button
+              {!readOnly && <button
                 type="button"
                 onClick={() => onDisconnect?.(account.provider)}
                 className={`grid size-8 place-items-center rounded-full text-muted-foreground transition hover:bg-rose-500/10 hover:text-rose-300`}
@@ -43,7 +44,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
                 title={`Disconnect ${account.name}`}
               >
                 <FiLogOut className="size-4" aria-hidden />
-              </button>
+              </button>}
               <FiChevronRight className={`size-4 text-muted-foreground ${compact ? "hidden sm:block" : ""}`} aria-hidden />
             </>
           ) : (

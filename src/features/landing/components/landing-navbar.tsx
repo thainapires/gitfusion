@@ -13,7 +13,7 @@ const navItems = [
   { label: "Product", href: "#product" },
   { label: "Features", href: "#features" },
   { label: "About", href: "#about" },
-  { label: "Resources", href: "#resources" },
+  // { label: "Resources", href: "#resources" },
 ];
 
 export function LandingNavbar({ user, isCheckingSession, onSignOut }: LandingNavbarProps) {
