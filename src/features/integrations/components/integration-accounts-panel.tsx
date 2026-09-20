@@ -22,6 +22,7 @@ type IntegrationAccountsPanelProps = {
   showContinue?: boolean;
   redirectTo?: string;
   className?: string;
+  demo?: boolean;
 };
 
 const providerAccounts: ConnectedAccount[] = [
@@ -47,8 +48,13 @@ const providerAccounts: ConnectedAccount[] = [
   },
 ];
 
-export function IntegrationAccountsPanel({ compact = false, showContinue = false, redirectTo = "/connect-accounts", className = "" }: IntegrationAccountsPanelProps) {
-  const [accounts, setAccounts] = useState<ConnectedAccount[]>(() => buildAccounts([]));
+const demoAccounts: ConnectedAccount[] = [
+  { provider: "github", name: "GitHub", username: "alexdev", email: "", status: "connected", repositories: 18, contributions: 842, lastSync: "Today" },
+  { provider: "gitlab", name: "GitLab", username: "alex.morgan", email: "", status: "connected", repositories: 7, contributions: 316, lastSync: "Today" },
+];
+
+export function IntegrationAccountsPanel({ compact = false, showContinue = false, redirectTo = "/connect-accounts", className = "", demo = false }: IntegrationAccountsPanelProps) {
+  const [accounts, setAccounts] = useState<ConnectedAccount[]>(() => demo ? demoAccounts : buildAccounts([]));
 
   const loadAccounts = useCallback(async () => {
     if (!isSupabaseConfigured()) {
@@ -81,6 +87,8 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
   }, []);
 
   useEffect(() => {
+    if (demo) return;
+
     const searchParams = new URLSearchParams(window.location.search);
     const connected = searchParams.get("connected");
     const integrationError = searchParams.get("integration_error");
@@ -95,7 +103,7 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
     }
 
     loadAccounts();
-  }, [loadAccounts]);
+  }, [demo, loadAccounts]);
 
   const connectAccount = async (provider: AccountProvider) => {
     setAccounts((current) => current.map((account) => account.provider === provider ? { ...account, status: "connecting" } : account));
@@ -181,7 +189,7 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
         </div>
         <div className={compact ? "grid grid-cols-1 sm:grid-cols-2 gap-3 xl:grid-cols-1" : "space-y-3"}>
           {accounts.map((account) => (
-            <AccountConnectionCard key={account.provider} account={account} onConnect={connectAccount} onDisconnect={disconnectAccount} compact={compact} />
+            <AccountConnectionCard key={account.provider} account={account} onConnect={connectAccount} onDisconnect={disconnectAccount} compact={compact} readOnly={demo} />
           ))}
         </div>
       </div>

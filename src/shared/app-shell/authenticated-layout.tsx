@@ -46,9 +46,11 @@ type AuthenticatedLayoutProps = {
   syncActions?: ReactNode;
   syncStatus?: DashboardSyncStatus | null;
   syncProviders?: AccountProvider[];
+  demo?: boolean;
+  demoUser?: UserDisplay;
 };
 
-type UserDisplay = {
+export type UserDisplay = {
   name: string;
   username: string;
   avatarUrl: string | null;
@@ -60,12 +62,19 @@ export function AuthenticatedLayout({
   syncActions,
   syncStatus,
   syncProviders,
+  demo = false,
+  demoUser,
 }: AuthenticatedLayoutProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(isSupabaseConfigured());
+  const [isCheckingSession, setIsCheckingSession] = useState(!demo && isSupabaseConfigured());
 
   useEffect(() => {
+    if (demo) {
+      setIsCheckingSession(false);
+      return;
+    }
+
     if (!isSupabaseConfigured()) {
       return;
     }
@@ -81,7 +90,7 @@ export function AuthenticatedLayout({
 
       setIsCheckingSession(false);
     });
-  }, [router]);
+  }, [demo, router]);
 
   if (isCheckingSession) {
     return (
@@ -99,6 +108,8 @@ export function AuthenticatedLayout({
         syncStatus={syncStatus}
         syncProviders={syncProviders}
         actions={actions}
+        demo={demo}
+        demoUser={demoUser}
       />
 
       {isOpen && (
@@ -109,12 +120,18 @@ export function AuthenticatedLayout({
             onClick={() => setIsOpen(false)}
           />
           <aside className="relative flex h-full w-[min(21rem,86vw)] flex-col border-r border-border bg-card shadow-2xl">
-            <MobileMenu onNavigate={() => setIsOpen(false)} />
+            <MobileMenu onNavigate={() => setIsOpen(false)} demo={demo} demoUser={demoUser} />
           </aside>
         </div>
       )}
 
       <main className="min-w-0 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8">
+        {demo && (
+          <div className="mx-auto mb-4 flex max-w-[1760px] flex-col gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-semibold text-foreground"><span className="font-extrabold">You are exploring sample data.</span> Actions that connect accounts or change data are unavailable.</p>
+            <Link href="/sign-up" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-xs font-extrabold text-white transition hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Create your account</Link>
+          </div>
+        )}
         <div className="mx-auto w-full max-w-[1760px] min-w-0">
           {children}
         </div>
@@ -129,12 +146,16 @@ function AuthenticatedHeader({
   syncStatus,
   syncProviders,
   actions,
+  demo,
+  demoUser,
 }: {
   onOpenMobileMenu: () => void;
   syncActions?: ReactNode;
   syncStatus?: DashboardSyncStatus | null;
   syncProviders?: AccountProvider[];
   actions?: ReactNode;
+  demo: boolean;
+  demoUser?: UserDisplay;
 }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/88 backdrop-blur-xl">
@@ -148,14 +169,16 @@ function AuthenticatedHeader({
           <FiMenu className="size-5" aria-hidden />
         </button>
 
-        <Link href="/dashboard" className="flex shrink-0 items-center gap-3 text-base font-extrabold" aria-label="GitFusion dashboard">
+        <Link href={demo ? "/demo" : "/dashboard"} className="flex shrink-0 items-center gap-3 text-base font-extrabold" aria-label="GitFusion dashboard">
           <AppLogo className="size-7" />
           <span>GitFusion</span>
         </Link>
 
+        {demo && <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[0.65rem] font-extrabold uppercase tracking-wider text-primary">Demo mode</span>}
+
         <nav className="hidden min-w-0 flex-1 items-center gap-1 lg:flex" aria-label="Primary navigation">
           {navItems.map((item) => (
-            <NavItem key={item.label} item={item} />
+            <NavItem key={item.label} item={item} demo={demo} />
           ))}
         </nav>
 
@@ -183,17 +206,18 @@ function AuthenticatedHeader({
             <FiBell className="size-4" aria-hidden />
             <span className="absolute right-2 top-2 size-1.5 rounded-full bg-rose-400" />
           </IconButton> */}
-          <UserMenu />
+          <UserMenu demo={demo} demoUser={demoUser} />
         </div>
       </div>
     </header>
   );
 }
 
-function NavItem({ item }: { item: SidebarItem }) {
+function NavItem({ item, demo }: { item: SidebarItem; demo: boolean }) {
   const pathname = usePathname();
   const Icon = item.icon;
-  const isActive = item.href === pathname;
+  const href = demo && item.href === "/dashboard" ? "/demo" : item.href;
+  const isActive = href === pathname;
   const classes = `inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-bold transition ${
     isActive
       ? "bg-primary/18 text-primary ring-1 ring-primary/25"
@@ -212,7 +236,7 @@ function NavItem({ item }: { item: SidebarItem }) {
   }
 
   return (
-    <Link href={item.href} className={classes}>
+    <Link href={href!} className={classes}>
       <Icon className="size-4" aria-hidden />
       {item.label}
     </Link>
@@ -250,11 +274,11 @@ function IconButton({ label, children }: { label: string; children: ReactNode })
   );
 }
 
-function UserMenu() {
+function UserMenu({ demo, demoUser }: { demo: boolean; demoUser?: UserDisplay }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const user = useUserDisplay();
+  const user = useUserDisplay(demoUser);
 
   useEffect(() => {
     if (!isOpen) {
@@ -283,13 +307,13 @@ function UserMenu() {
   }, [isOpen]);
 
   const handleSignOut = async () => {
-    if (isSupabaseConfigured()) {
+    if (!demo && isSupabaseConfigured()) {
       const supabase = createSupabaseBrowserClient();
       await supabase.auth.signOut();
     }
 
     setIsOpen(false);
-    router.push("/sign-in");
+    router.push(demo ? "/" : "/sign-in");
     router.refresh();
   };
 
@@ -298,7 +322,7 @@ function UserMenu() {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="flex h-10 items-center gap-2 rounded-full border border-transparent pl-1 pr-2 transition hover:border-primary/30 hover:bg-card"
+        className="flex h-10 items-center gap-2 rounded-full cursor-pointer"
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
@@ -319,7 +343,7 @@ function UserMenu() {
             </div>
           </div>
 
-          <Link
+          {!demo && <Link
             href="/settings"
             role="menuitem"
             onClick={() => setIsOpen(false)}
@@ -327,7 +351,7 @@ function UserMenu() {
           >
             <FiSettings className="size-4" aria-hidden />
             Settings
-          </Link>
+          </Link>}
 
           <button
             type="button"
@@ -336,7 +360,7 @@ function UserMenu() {
             className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground cursor-pointer"
           >
             <FiLogOut className="size-4" aria-hidden />
-            Sign out
+            {demo ? "Exit demo" : "Sign out"}
           </button>
         </div>
       )}
@@ -344,13 +368,13 @@ function UserMenu() {
   );
 }
 
-function MobileMenu({ onNavigate }: { onNavigate: () => void }) {
-  const user = useUserDisplay();
+function MobileMenu({ onNavigate, demo, demoUser }: { onNavigate: () => void; demo: boolean; demoUser?: UserDisplay }) {
+  const user = useUserDisplay(demoUser);
 
   return (
     <>
       <div className="flex h-16 items-center justify-between border-b border-border px-5">
-        <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3 font-extrabold" aria-label="GitFusion dashboard">
+        <Link href={demo ? "/demo" : "/dashboard"} onClick={onNavigate} className="flex items-center gap-3 font-extrabold" aria-label="GitFusion dashboard">
           <AppLogo className="size-7" />
           GitFusion
         </Link>
@@ -361,9 +385,9 @@ function MobileMenu({ onNavigate }: { onNavigate: () => void }) {
 
       <nav className="flex-1 space-y-1 p-4" aria-label="Mobile navigation">
         {navItems.map((item) => (
-          <MobileNavItem key={item.label} item={item} onNavigate={onNavigate} />
+          <MobileNavItem key={item.label} item={item} onNavigate={onNavigate} demo={demo} />
         ))}
-        <MobileNavItem item={{ label: "Settings", href: "/settings", icon: FiSettings }} onNavigate={onNavigate} />
+        {!demo && <MobileNavItem item={{ label: "Settings", href: "/settings", icon: FiSettings }} onNavigate={onNavigate} demo={false} />}
       </nav>
 
       <div className="border-t border-border p-4">
@@ -379,10 +403,11 @@ function MobileMenu({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-function MobileNavItem({ item, onNavigate }: { item: SidebarItem; onNavigate: () => void }) {
+function MobileNavItem({ item, onNavigate, demo }: { item: SidebarItem; onNavigate: () => void; demo: boolean }) {
   const pathname = usePathname();
   const Icon = item.icon;
-  const isActive = item.href === pathname;
+  const href = demo && item.href === "/dashboard" ? "/demo" : item.href;
+  const isActive = href === pathname;
   const classes = `flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold transition ${
     isActive
       ? "bg-primary/18 text-primary ring-1 ring-primary/25"
@@ -402,7 +427,7 @@ function MobileNavItem({ item, onNavigate }: { item: SidebarItem; onNavigate: ()
   }
 
   return (
-    <Link href={item.href} onClick={onNavigate} className={classes}>
+    <Link href={href!} onClick={onNavigate} className={classes}>
       <Icon className="size-4" aria-hidden />
       {item.label}
     </Link>
@@ -541,7 +566,7 @@ function UserAvatar({ user }: { user: UserDisplay }) {
   );
 }
 
-function useUserDisplay() {
+function useUserDisplay(override?: UserDisplay) {
   const [display, setDisplay] = useState<UserDisplay>({
     name: "GitFusion user",
     username: "",
@@ -549,6 +574,11 @@ function useUserDisplay() {
   });
 
   useEffect(() => {
+    if (override) {
+      setDisplay(override);
+      return;
+    }
+
     if (!isSupabaseConfigured()) {
       return;
     }
@@ -582,9 +612,9 @@ function useUserDisplay() {
     loadUser();
     window.addEventListener("gitfusion:profile-updated", loadUser);
     return () => window.removeEventListener("gitfusion:profile-updated", loadUser);
-  }, []);
+  }, [override]);
 
-  return display;
+  return override ?? display;
 }
 
 function getSyncSummary(sync: DashboardSyncStatus) {

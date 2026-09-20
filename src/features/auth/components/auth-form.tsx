@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { uploadUserAvatar } from "@/lib/supabase/avatar";
+import { Alert, AlertDialog } from "@heroui/react";
 
 type AuthMode = "sign-in" | "sign-up";
 
@@ -154,7 +155,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       )}
 
       {message && (
-        <div className="rounded-md border border-gray-200 bg-background px-3 py-2 text-sm font-semibold text-muted-foreground dark:border-gray-800">
+        <div className="rounded-md border border-red-400 bg-red-600/20 px-3 py-2 text-sm font-semibold text-gray-300">
           {message}
         </div>
       )}
@@ -166,6 +167,15 @@ export function AuthForm({ mode }: AuthFormProps) {
       >
         {isSubmitting ? "Processing..." : isSignUp ? "Create account" : "Sign in"}
       </button>
+
+      {!isSignUp && (
+        <Link
+          href="/demo"
+          className="flex h-11 w-full items-center justify-center rounded-md border border-gray-200 bg-background px-4 text-sm font-extrabold text-foreground transition hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-gray-800"
+        >
+          Explore the live demo
+        </Link>
+      )}
 
       <p className="text-center text-sm text-muted-foreground">
         {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
