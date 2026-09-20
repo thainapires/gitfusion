@@ -16,6 +16,19 @@ type ProviderDashboardData = {
   pullOrMergeRequests: number;
 };
 
+type GitHubDashboardGraphResponse = {
+  data?: {
+    viewer?: {
+      contributionsCollection?: {
+        contributionCalendar?: { weeks?: { contributionDays?: { date: string; contributionCount: number }[] }[] };
+        pullRequestContributions?: { totalCount: number };
+      };
+    };
+  };
+  errors?: { message?: string }[];
+  message?: string;
+};
+
 export type StoredDailyTotal = {
   date: string;
   github_count: number;
@@ -157,20 +170,12 @@ async function fetchGitHubDashboardData(account: ConnectedAccountRow, since: str
       variables: { from, to },
     }),
   });
-  const graphJson = await graphResponse.json() as {
-    data?: {
-      viewer?: {
-        contributionsCollection?: {
-          contributionCalendar?: { weeks?: { contributionDays?: { date: string; contributionCount: number }[] }[] };
-          pullRequestContributions?: { totalCount: number };
-        };
-      };
-    };
-    errors?: { message: string }[];
-  };
+  const graphJson = await readJsonResponse<GitHubDashboardGraphResponse>(graphResponse);
 
   if (!graphResponse.ok || graphJson.errors?.length) {
-    throw new Error(graphJson.errors?.[0]?.message || "Unable to load GitHub dashboard data.");
+    console.log(graphResponse);
+    console.log(graphJson);
+    throw new Error(getGitHubDashboardErrorMessage(graphResponse, graphJson));
   }
 
   const daily = new Map<string, number>();
@@ -245,6 +250,32 @@ async function fetchGitHubEvents(account: ConnectedAccountRow) {
   });
 
   return { activities, pullRequests };
+}
+
+async function readJsonResponse<T>(response: Response): Promise<T> {
+  try {
+    return await response.json() as T;
+  } catch {
+    return {} as T;
+  }
+}
+
+function getGitHubDashboardErrorMessage(
+  response: Response,
+  payload: GitHubDashboardGraphResponse,
+) {
+  const graphQLError = payload.errors?.find((error) => error.message)?.message;
+
+  if (graphQLError) {
+    return graphQLError;
+  }
+
+  if (payload.message) {
+    return payload.message;
+  }
+
+  const statusText = response.statusText || "GitHub API error";
+  return `Unable to load GitHub dashboard data (${response.status} ${statusText}).`;
 }
 
 async function fetchGitLabDashboardData(account: ConnectedAccountRow, since: string): Promise<ProviderDashboardData> {

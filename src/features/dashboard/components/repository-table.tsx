@@ -2,47 +2,45 @@ import { FaGithub, FaGitlab } from "react-icons/fa";
 import { RepositorySummary } from "@/types/mock-app";
 
 export function RepositoryTable({ repositories }: { repositories: RepositorySummary[] }) {
+  const maxContributions = Math.max(...repositories.map((repo) => repo.contributions), 1);
+
   return (
-    <section className="min-w-0 rounded-lg border border-gray-200 bg-card p-4 shadow-sm dark:border-gray-800 sm:p-5">
-      <h2 className="text-lg font-extrabold">Top repositories</h2>
+    <section className="min-w-0 rounded-lg border border-border bg-card/85 p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-base font-extrabold">Top repositories</h2>
+        <span className="text-xs font-bold text-muted-foreground">Top {Math.min(repositories.length, 5)}</span>
+      </div>
       {!repositories.length ? (
-        <div className="mt-4 rounded-md border border-gray-200 bg-background p-4 text-sm leading-6 text-muted-foreground dark:border-gray-800">
+        <div className="mt-4 rounded-md border border-border bg-background p-4 text-sm leading-6 text-muted-foreground">
           No repositories were returned by the connected providers yet.
         </div>
       ) : (
-      <div className="mt-4 max-w-full overflow-x-auto">
-        <table className="w-full min-w-[30rem] text-left text-sm sm:min-w-[34rem]">
-          <thead className="border-b border-gray-200 text-xs uppercase text-muted-foreground dark:border-gray-800">
-            <tr>
-              <th className="py-3 pr-4">Repository</th>
-              <th className="px-4 py-3">Platform</th>
-              <th className="px-4 py-3">Language</th>
-              <th className="px-4 py-3 text-right">Contributions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            {repositories.map((repo) => {
-              const Icon = repo.platform === "github" ? FaGithub : FaGitlab;
-              return (
-                <tr key={repo.name}>
-                  <td className="py-4 pr-4">
-                    <div className="max-w-[13rem] truncate font-bold sm:max-w-none">{repo.name}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{repo.visibility}</div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="inline-flex items-center gap-2 font-semibold">
-                      <Icon className="size-4" aria-hidden />
-                      {repo.platform}
+        <div className="mt-4 space-y-3">
+          {repositories.slice(0, 5).map((repo, index) => {
+            const Icon = repo.platform === "github" ? FaGithub : FaGitlab;
+            const width = `${Math.max((repo.contributions / maxContributions) * 100, 8)}%`;
+
+            return (
+              <article key={`${repo.platform}-${repo.name}`} className="grid min-w-0 grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-3">
+                <span className="text-xs font-extrabold text-muted-foreground">{index + 1}</span>
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Icon className={"size-3.5 shrink-0 " + (repo.platform === "github" ? "text-slate-200" : "text-orange-400")} aria-hidden />
+                    <h3 className="truncate text-sm font-extrabold">{repo.name}</h3>
+                    <span className="hidden shrink-0 rounded-full bg-background px-2 py-0.5 text-[0.65rem] font-bold text-muted-foreground sm:inline">{repo.visibility}</span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-3">
+                    <span className="w-20 shrink-0 truncate text-xs font-semibold text-muted-foreground">{repo.language}</span>
+                    <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
+                      <span className="block h-full rounded-full bg-primary" style={{ width }} />
                     </span>
-                  </td>
-                  <td className="px-4 py-4 text-muted-foreground">{repo.language}</td>
-                  <td className="px-4 py-4 text-right font-extrabold">{repo.contributions}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                  </div>
+                </div>
+                <span className="text-sm font-extrabold">{repo.contributions.toLocaleString("en-US")}</span>
+              </article>
+            );
+          })}
+        </div>
       )}
     </section>
   );
