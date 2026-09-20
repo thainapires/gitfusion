@@ -92,11 +92,11 @@ export function LandingPage() {
               Your dev journey, unified.
             </p>
 
-            <h1 className="mt-6 max-w-5xl text-balance text-4xl font-extrabold leading-[1.04] tracking-normal text-white sm:text-6xl lg:text-[4.8rem]">
+            <h1 className="mt-6 max-w-5xl text-balance text-4xl sm:text-[clamp(2.5rem,5.35vw,4.8rem)] font-extrabold leading-[1.06] tracking-normal text-white">
               All-in-One Developer <span className="block text-primary">Productivity Platform</span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-pretty text-base font-medium leading-8 text-slate-300 sm:text-lg">
+            <p className="mt-6 max-w-2xl text-pretty text-base font-medium leading-7 text-slate-300 sm:text-lg sm:leading-8">
               Connect your GitHub and GitLab, track your progress, analyze your activity and see the bigger picture of your coding journey.
             </p>
 
@@ -108,7 +108,7 @@ export function LandingPage() {
 
         <FeatureStrip />
         <PlatformStrip />
-        <InsightsSection />
+        {/* <InsightsSection /> */}
         <OpenSourceSection />
         <FinalCta isAuthenticated={Boolean(user)} isCheckingSession={isCheckingSession} />
         <LandingFooter />
@@ -124,7 +124,7 @@ function LandingActions({ isAuthenticated, isCheckingSession, className = "" }: 
     <div className={`flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row ${className}`}>
       <Link
         href={primaryHref}
-        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-extrabold text-white transition hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:w-auto"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-extrabold text-white transition hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:w-auto"
         aria-disabled={isCheckingSession}
       >
         {isAuthenticated ? "Go to dashboard" : "Get Started Free"}
@@ -155,11 +155,11 @@ function FeatureStrip() {
   ];
 
   return (
-    <section id="features" className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-5 py-10 sm:grid-cols-2 sm:px-8 md:grid-cols-5 lg:px-10">
-      {features.map((feature) => {
+    <section id="features" className="mx-auto grid max-w-7xl grid-cols-2 gap-x-5 gap-y-8 px-5 py-10 sm:px-8 md:grid-cols-6 md:gap-x-6 lg:grid-cols-5 lg:px-10">
+      {features.map((feature, index) => {
         const Icon = feature.icon;
         return (
-          <article key={feature.title} className="flex flex-col items-center text-center sm:items-start sm:text-left md:items-center md:text-center">
+          <article key={feature.title} className={`flex flex-col items-center text-center md:col-span-2 lg:col-span-1 ${index === 3 ? "md:col-start-2 lg:col-start-auto" : ""} ${index === features.length - 1 ? "max-md:col-span-2 max-md:mx-auto max-md:w-full max-md:max-w-52" : ""}`}>
             <span className="grid size-11 place-items-center rounded-md border border-primary/25 bg-primary/10 text-primary">
               <Icon className="size-5" aria-hidden />
             </span>
@@ -185,14 +185,14 @@ function PlatformStrip() {
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
       <div className="flex items-center gap-4 text-center">
         <div className="h-px flex-1 bg-white/10" />
-        <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.24em] text-slate-500">Built with & connected to</p>
+        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-400">Built with & connected to</p>
         <div className="h-px flex-1 bg-white/10" />
       </div>
       <div className="mt-8 grid grid-cols-2 gap-6 text-slate-400 sm:grid-cols-5">
         {platforms.map((platform) => {
           const Icon = platform.icon;
           return (
-            <div key={platform.name} className="flex items-center justify-center gap-3 text-base font-extrabold opacity-80">
+            <div key={platform.name} className="flex items-center justify-center gap-3 text-base font-extrabold opacity-80 last:col-span-2 sm:last:col-span-1">
               <Icon className="size-6" aria-hidden />
               {platform.name}
             </div>
@@ -205,16 +205,16 @@ function PlatformStrip() {
 
 function InsightsSection() {
   return (
-    <section id="resources" className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.74fr_1fr] lg:px-10">
+    <section id="resources" className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-14 sm:px-8 sm:py-16 lg:grid-cols-[0.74fr_1fr] lg:px-10 lg:py-20">
       <div>
-        <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary">Turn activity into insights</p>
-        <h2 className="mt-4 max-w-xl text-4xl font-extrabold leading-tight tracking-normal text-white sm:text-5xl">
+        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-primary">Turn activity into insights</p>
+        <h2 className="mt-4 max-w-xl text-[clamp(2rem,4vw,3rem)] font-extrabold leading-[1.18] tracking-normal text-white">
           Understand more. <span className="block text-primary">Build what&apos;s next.</span>
         </h2>
-        <p className="mt-5 max-w-lg text-base leading-8 text-slate-300">
+        <p className="mt-5 max-w-lg text-base leading-7 text-slate-300 sm:leading-8">
           Go beyond raw contribution counts. GitFusion helps developers understand activity, languages, repositories, and trends across the platforms where real work happens.
         </p>
-        <Link href="#features" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-md border border-primary/40 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+        <Link href="#features" className="mt-7 inline-flex h-11 items-center gap-2 rounded-md border border-primary/40 px-5 text-sm font-extrabold text-white transition hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
           Explore all features
           <FiArrowRight className="size-4" aria-hidden />
         </Link>
@@ -240,8 +240,8 @@ function LanguagesCard() {
   return (
     <article className="rounded-lg border border-white/10 bg-[#101421]/90 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.24)]">
       <h3 className="text-sm font-extrabold text-white">Languages</h3>
-      <div className="mt-6 grid items-center gap-6 sm:grid-cols-[9rem_1fr] md:grid-cols-1 xl:grid-cols-[9rem_1fr]">
-        <div className="mx-auto size-36 rounded-full bg-[conic-gradient(#8b5cf6_0_42%,#a855f7_42%_70%,#6d5dfc_70%_82%,#c4b5fd_82%_90%,#94a3b8_90%_100%)] p-6">
+      <div className="mt-6 grid grid-cols-[7rem_1fr] items-center gap-5 sm:grid-cols-[9rem_1fr] sm:gap-6 md:grid-cols-1 xl:grid-cols-[9rem_1fr]">
+        <div className="mx-auto size-28 rounded-full bg-[conic-gradient(#8b5cf6_0_42%,#a855f7_42%_70%,#6d5dfc_70%_82%,#c4b5fd_82%_90%,#94a3b8_90%_100%)] p-5 sm:size-36 sm:p-6">
           <div className="size-full rounded-full bg-[#101421]" />
         </div>
         <dl className="space-y-3">
@@ -273,10 +273,10 @@ function ContributionsCard() {
         <h3 className="text-sm font-extrabold text-white">Contributions</h3>
         <span className="text-xs font-extrabold text-emerald-400">+12%</span>
       </div>
-      <div className="mt-7 flex h-44 items-end gap-4 border-l border-b border-white/10 px-3 pb-3">
+      <div className="mt-7 grid h-40 grid-cols-6 gap-3 sm:h-44 sm:gap-4 border-l border-b border-white/10 px-3 pb-3">
         {months.map(([month, value]) => (
-          <div key={month} className="flex flex-1 flex-col items-center gap-3">
-            <span className="w-full rounded-t bg-gradient-to-t from-primary to-fuchsia-500" style={{ height: `${value}%` }} />
+          <div key={month} className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3">
+            <span className="w-full self-end rounded-t bg-gradient-to-t from-primary to-fuchsia-500" style={{ height: `${value}%` }} />
             <span className="text-xs font-bold text-slate-400">{month}</span>
           </div>
         ))}
@@ -287,20 +287,20 @@ function ContributionsCard() {
 
 function OpenSourceSection() {
   return (
-    <section id="about" className="relative overflow-hidden border-y border-white/10 py-20">
+    <section id="about" className="relative overflow-hidden border-y border-white/10 py-16 sm:py-20">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.06)_1px,transparent_1px)] bg-[size:42px_42px] [mask-image:radial-gradient(circle_at_center,black,transparent_72%)]" aria-hidden />
       <div className="relative mx-auto max-w-3xl px-5 text-center sm:px-8">
-        <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary">Open source forever</p>
-        <h2 className="mt-4 text-4xl font-extrabold tracking-normal text-white sm:text-5xl">Built by a developer, for developers.</h2>
-        <p className="mt-5 text-base leading-8 text-slate-300">
+        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-primary">Open source forever</p>
+        <h2 className="mt-4 text-[clamp(2rem,4vw,3rem)] font-extrabold leading-[1.18] tracking-normal text-white">Built by a developer, for developers.</h2>
+        <p className="mt-5 text-base leading-7 text-slate-300 sm:leading-8">
           GitFusion is 100% free and open source. No hidden fees, no tracking, no lock-in. Just a tool made to help you understand your journey and build what&apos;s next.
         </p>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link href={repositoryUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-extrabold text-white transition hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row items-center">
+          <Link href={repositoryUrl} target="_blank" rel="noreferrer" className="w-fit inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-extrabold text-white transition hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
             <FaGithub className="size-4" aria-hidden />
             View on GitHub
           </Link>
-          <Link href="#about" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/15 px-5 py-3 text-sm font-extrabold text-white transition hover:border-primary/50 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <Link href="#about" className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-white/15 px-5 text-sm font-extrabold text-white transition hover:border-primary/50 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
             Our story
           </Link>
         </div>
@@ -311,14 +311,12 @@ function OpenSourceSection() {
 
 function FinalCta({ isAuthenticated, isCheckingSession }: { isAuthenticated: boolean; isCheckingSession: boolean }) {
   return (
-    <section id="pricing" className="relative overflow-hidden px-5 py-24 sm:px-8 lg:px-10">
-      <div className="pointer-events-none absolute inset-x-0 top-10 mx-auto hidden h-72 max-w-6xl rounded-t-[8rem] border-t border-primary/25 lg:block" aria-hidden />
-      <div className="pointer-events-none absolute inset-x-1/2 top-20 h-px w-[90rem] -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/25 to-transparent" aria-hidden />
+    <section id="pricing" className="relative overflow-hidden px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
       <div className="relative mx-auto max-w-3xl text-center">
-        <h2 className="text-4xl font-extrabold leading-tight tracking-normal text-white sm:text-5xl">
+        <h2 className="text-[clamp(2rem,4vw,3rem)] font-extrabold leading-[1.18] tracking-normal text-white">
           Ready to see your <span className="block"><span className="text-primary">dev journey</span> in a new way?</span>
         </h2>
-        <p className="mt-5 text-base leading-8 text-slate-300">
+        <p className="mt-5 text-base leading-7 text-slate-300 sm:leading-8">
           Connect your GitHub and GitLab, track your progress and join a growing community of developers.
         </p>
         <LandingActions isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession} className="mt-8" />
@@ -330,9 +328,9 @@ function FinalCta({ isAuthenticated, isCheckingSession }: { isAuthenticated: boo
 function LandingFooter() {
   return (
     <footer className="border-t border-white/10 px-5 py-9 sm:px-8 lg:px-10">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 lg:flex-row items-center sm:items-start lg:items-center lg:justify-between">
         <div>
-          <Link href="/" className="inline-flex items-center gap-3 font-extrabold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <Link href="/" className="w-full sm:w-fit justify-center sm:justify-start inline-flex items-center gap-3 font-extrabold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
             <AppLogo className="size-7" />
             GitFusion
           </Link>

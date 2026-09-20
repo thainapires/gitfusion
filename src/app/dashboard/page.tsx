@@ -408,7 +408,7 @@ function getLanguageBreakdown(repositories: RepositorySummary[]) {
   const entries = Array.from(totals.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const total = entries.reduce((sum, [, value]) => sum + value, 0);
   let cursor = 0;
-  const colors = ["#8b5cf6", "#a855f7", "#c084fc", "#7c3aed", "#818cf8"];
+  const colors = ["#67E8F9", "#A78BFA", "#F9A8D4", "#FBBF24", "#6EE7B7"];
 
   return entries.map(([name, value], index) => {
     const percent = total ? Math.round((value / total) * 100) : 0;
@@ -457,16 +457,42 @@ function parseLocalDate(date: string) {
 
 function DashboardLoading() {
   return (
-    <div className="space-y-5">
-      <div className="h-48 animate-pulse rounded-lg bg-card/80" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="h-34 animate-pulse rounded-lg border border-border bg-card" />
-        ))}
+    <div
+      className="mx-auto grid w-full max-w-[1600px] animate-pulse grid-cols-6 gap-4 motion-reduce:animate-none lg:grid-cols-12 lg:gap-6"
+      role="status"
+      aria-label="Loading dashboard"
+    >
+      <div className="col-span-full h-[188px] rounded-lg bg-card/80" aria-hidden />
+
+      <div className="col-span-full h-52 rounded-2xl border border-primary/20 bg-card sm:hidden" aria-hidden />
+
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={index}
+          className="hidden h-40 rounded-lg border border-border bg-card sm:col-span-2 sm:block lg:col-span-4 xl:col-span-3"
+          aria-hidden
+        />
+      ))}
+
+      <div className="col-span-full rounded-lg border border-border bg-card p-4 xl:col-span-3" aria-hidden>
+        <div className="h-5 w-40 rounded bg-muted" />
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+          <div className="h-20 rounded-lg bg-muted/70" />
+          <div className="h-20 rounded-lg bg-muted/70" />
+        </div>
       </div>
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,23rem)]">
-        <div className="h-80 animate-pulse rounded-lg border border-border bg-card" />
-        <div className="h-80 animate-pulse rounded-lg border border-border bg-card" />
+
+      <div className="col-span-full grid min-w-0 content-start gap-4 lg:col-span-8 lg:gap-6 xl:col-span-9" aria-hidden>
+        <div className="h-72 rounded-lg border border-border bg-card lg:h-80" />
+        <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:gap-6">
+          <div className="h-72 rounded-lg border border-border bg-card" />
+          <div className="h-72 rounded-lg border border-border bg-card" />
+        </div>
+      </div>
+
+      <div className="col-span-full grid min-w-0 gap-4 md:grid-cols-2 lg:col-span-4 lg:flex lg:flex-col lg:gap-6 xl:col-span-3" aria-hidden>
+        <div className="h-96 rounded-lg border border-border bg-card lg:flex-1" />
+        <div className="h-64 rounded-lg border border-border bg-card" />
       </div>
     </div>
   );

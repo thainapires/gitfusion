@@ -44,8 +44,8 @@ export function HeroIllustration() {
   return (
     <div id="product-preview" className="relative mx-auto mt-14 w-full max-w-[1120px] animate-hero-illustration sm:mt-16 lg:mt-20">
       <div className="absolute -inset-x-12 -inset-y-8 rounded-[2rem] bg-primary/18 blur-3xl" aria-hidden />
-      <div className="relative mx-auto h-[236px] w-[347px] min-[420px]:h-[268px] min-[420px]:w-[394px] sm:h-[441px] sm:w-[650px] md:h-[516px] md:w-[760px] lg:h-[679px] lg:w-[1000px] xl:h-[760px] xl:w-[1120px]">
-        <div className="absolute left-0 top-0 h-[760px] w-[1120px] origin-top-left scale-[0.31] overflow-hidden rounded-lg border border-primary/45 bg-[#080a17] shadow-[0_26px_90px_rgba(0,0,0,0.42),0_0_60px_rgba(139,92,246,0.18)] min-[420px]:scale-[0.352] sm:scale-[0.58] md:scale-[0.678] lg:scale-[0.893] xl:scale-100">
+      <div className="relative mx-auto h-[236px] w-[347px] max-w-full min-[420px]:h-[268px] min-[420px]:w-[394px] sm:h-[441px] sm:w-[650px] md:h-[478px] md:w-[704px] lg:h-[679px] lg:w-[1000px] xl:h-[760px] xl:w-[1120px]">
+        <div className="absolute left-0 top-0 h-[760px] w-[1120px] origin-top-left scale-[0.31] overflow-hidden rounded-lg border border-primary/45 bg-[#080a17] shadow-[0_26px_90px_rgba(0,0,0,0.42),0_0_60px_rgba(139,92,246,0.18)] min-[420px]:scale-[0.352] sm:scale-[0.58] md:scale-[0.629] lg:scale-[0.893] xl:scale-100">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.16),transparent_34rem)]" aria-hidden />
           <div className="relative grid h-full grid-cols-[190px_minmax(0,1fr)] text-white">
             <aside className="flex min-h-0 flex-col border-r border-white/10 bg-[#080b18]/95 px-4 py-5">

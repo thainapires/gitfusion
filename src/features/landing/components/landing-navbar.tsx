@@ -33,7 +33,7 @@ export function LandingNavbar({ user, isCheckingSession, onSignOut }: LandingNav
           <Link
             key={item.label}
             href={item.href}
-            className="text-xs font-extrabold text-slate-300 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            className="text-sm font-bold text-slate-300 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           >
             {item.label}
           </Link>
