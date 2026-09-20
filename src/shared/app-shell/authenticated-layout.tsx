@@ -4,21 +4,38 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { FaGithub, FaGitlab } from "react-icons/fa";
-import { FiAlertCircle, FiAward, FiBarChart2, FiCalendar, FiCheckCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiClock, FiGitPullRequest, FiGrid, FiLogOut, FiMenu, FiSettings, FiX } from "react-icons/fi";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { AccountProvider, SidebarItem } from "@/types/mock-app";
-// import { ThemeToggle } from "@/shared/components/theme-toggle";
+import {
+  FiAlertCircle,
+  FiAward,
+  FiBarChart2,
+  FiBell,
+  FiCalendar,
+  FiCheckCircle,
+  FiChevronDown,
+  FiClock,
+  FiCompass,
+  FiGitPullRequest,
+  FiGrid,
+  FiLogOut,
+  FiMenu,
+  FiMoon,
+  FiSearch,
+  FiSettings,
+  FiX,
+} from "react-icons/fi";
 import { Avatar } from "@heroui/react";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { AppLogo } from "@/shared/components/app-logo";
+import { AccountProvider, SidebarItem } from "@/types/mock-app";
 import { DashboardSyncStatus } from "@/types/dashboard";
 
-const sidebarItems: SidebarItem[] = [
+const navItems: SidebarItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: FiGrid },
   { label: "Repositories", disabled: true, icon: FiGitPullRequest },
   { label: "Analytics", disabled: true, icon: FiBarChart2 },
   { label: "Compare", disabled: true, icon: FiBarChart2 },
   { label: "Achievements", disabled: true, icon: FiAward },
-  { label: "Settings", href: "/settings", icon: FiSettings },
+  { label: "Explore", disabled: true, icon: FiCompass },
 ];
 
 type AuthenticatedLayoutProps = {
@@ -31,10 +48,21 @@ type AuthenticatedLayoutProps = {
   syncProviders?: AccountProvider[];
 };
 
-export function AuthenticatedLayout({ title, description, children, actions, syncActions, syncStatus, syncProviders }: AuthenticatedLayoutProps) {
+type UserDisplay = {
+  name: string;
+  username: string;
+  avatarUrl: string | null;
+};
+
+export function AuthenticatedLayout({
+  children,
+  actions,
+  syncActions,
+  syncStatus,
+  syncProviders,
+}: AuthenticatedLayoutProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(isSupabaseConfigured());
 
   useEffect(() => {
@@ -46,6 +74,7 @@ export function AuthenticatedLayout({ title, description, children, actions, syn
 
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
+        setIsCheckingSession(false);
         router.replace("/sign-in");
         return;
       }
@@ -64,45 +93,319 @@ export function AuthenticatedLayout({ title, description, children, actions, syn
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="lg:hidden">
-        <MobileTopbar onOpen={() => setIsOpen(true)} />
-        {isOpen && (
-          <div className="fixed inset-0 z-50">
-            <button className="absolute inset-0 bg-slate-950/50" aria-label="Close navigation" onClick={() => setIsOpen(false)} />
-            <aside className="relative h-full w-[min(20rem,85vw)] bg-card shadow-xl">
-              <Sidebar onNavigate={() => setIsOpen(false)} />
-            </aside>
+      <AuthenticatedHeader
+        onOpenMobileMenu={() => setIsOpen(true)}
+        syncActions={syncActions}
+        syncStatus={syncStatus}
+        syncProviders={syncProviders}
+        actions={actions}
+      />
+
+      {isOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+            aria-label="Close navigation"
+            onClick={() => setIsOpen(false)}
+          />
+          <aside className="relative flex h-full w-[min(21rem,86vw)] flex-col border-r border-border bg-card shadow-2xl">
+            <MobileMenu onNavigate={() => setIsOpen(false)} />
+          </aside>
+        </div>
+      )}
+
+      <main className="min-w-0 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1760px] min-w-0">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function AuthenticatedHeader({
+  onOpenMobileMenu,
+  syncActions,
+  syncStatus,
+  syncProviders,
+  actions,
+}: {
+  onOpenMobileMenu: () => void;
+  syncActions?: ReactNode;
+  syncStatus?: DashboardSyncStatus | null;
+  syncProviders?: AccountProvider[];
+  actions?: ReactNode;
+}) {
+  return (
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/88 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-[1760px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={onOpenMobileMenu}
+          className="grid size-10 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground transition hover:border-primary/40 hover:text-foreground lg:hidden"
+          aria-label="Open navigation"
+        >
+          <FiMenu className="size-5" aria-hidden />
+        </button>
+
+        <Link href="/dashboard" className="flex shrink-0 items-center gap-3 text-base font-extrabold" aria-label="GitFusion dashboard">
+          <AppLogo className="size-7" />
+          <span>GitFusion</span>
+        </Link>
+
+        <nav className="hidden min-w-0 flex-1 items-center gap-1 lg:flex" aria-label="Primary navigation">
+          {navItems.map((item) => (
+            <NavItem key={item.label} item={item} />
+          ))}
+        </nav>
+
+        <div className="ml-auto hidden min-w-0 items-center gap-3 xl:flex">
+          {/* <SearchControl /> */}
+          <button
+            type="button"
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-border bg-card/70 px-3 text-sm font-bold text-foreground"
+            title="Dashboard data uses the current yearly activity window"
+          >
+            <span>Last year</span>
+            {/* <FiChevronDown className="size-4 text-muted-foreground" aria-hidden /> */}
+          </button>
+        </div>
+
+        <div className="ml-auto flex shrink-0 items-center gap-2 xl:ml-0">
+          <div className="hidden 2xl:block">
+            <SyncStatusPanel sync={syncStatus ?? null} providers={syncProviders ?? []} actions={syncActions} />
           </div>
-        )}
+          <div className="hidden xl:flex">{actions}</div>
+          {/* <IconButton label="Dark theme is active">
+            <FiMoon className="size-4" aria-hidden />
+          </IconButton>
+          <IconButton label="Notifications">
+            <FiBell className="size-4" aria-hidden />
+            <span className="absolute right-2 top-2 size-1.5 rounded-full bg-rose-400" />
+          </IconButton> */}
+          <UserMenu />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function NavItem({ item }: { item: SidebarItem }) {
+  const pathname = usePathname();
+  const Icon = item.icon;
+  const isActive = item.href === pathname;
+  const classes = `inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-bold transition ${
+    isActive
+      ? "bg-primary/18 text-primary ring-1 ring-primary/25"
+      : item.disabled
+        ? "cursor-not-allowed text-muted-foreground/60"
+        : "text-muted-foreground hover:bg-card hover:text-foreground"
+  }`;
+
+  if (!item.href || item.disabled) {
+    return (
+      <button type="button" className={classes} disabled title="Coming soon">
+        <Icon className="size-4" aria-hidden />
+        {item.label}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={item.href} className={classes}>
+      <Icon className="size-4" aria-hidden />
+      {item.label}
+    </Link>
+  );
+}
+
+function SearchControl() {
+  return (
+    <div className="relative w-[min(24vw,22rem)] min-w-[18rem]">
+      <FiSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+      <input
+        type="search"
+        disabled
+        placeholder="Search repositories, languages, insights..."
+        className="h-10 w-full rounded-lg border border-border bg-card/70 pl-10 pr-14 text-sm font-semibold text-muted-foreground outline-none placeholder:text-muted-foreground/75"
+        aria-label="Search repositories, languages, insights"
+      />
+      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-border bg-background px-2 py-0.5 text-[0.68rem] font-extrabold text-muted-foreground">
+        Ctrl K
+      </span>
+    </div>
+  );
+}
+
+function IconButton({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      className="relative grid size-10 place-items-center rounded-full border border-border bg-card/70 text-muted-foreground transition hover:border-primary/35 hover:text-foreground"
+      aria-label={label}
+      title={label}
+    >
+      {children}
+    </button>
+  );
+}
+
+function UserMenu() {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const user = useUserDisplay();
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleSignOut = async () => {
+    if (isSupabaseConfigured()) {
+      const supabase = createSupabaseBrowserClient();
+      await supabase.auth.signOut();
+    }
+
+    setIsOpen(false);
+    router.push("/sign-in");
+    router.refresh();
+  };
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex h-10 items-center gap-2 rounded-full border border-transparent pl-1 pr-2 transition hover:border-primary/30 hover:bg-card"
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+      >
+        <UserAvatar user={user} />
+        <FiChevronDown className="hidden size-4 text-muted-foreground sm:block" aria-hidden />
+      </button>
+
+      {isOpen && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-40 mt-3 w-64 overflow-hidden rounded-xl border border-border bg-card shadow-2xl shadow-black/30"
+        >
+          <div className="flex min-w-0 items-center gap-3 border-b border-border p-4">
+            <UserAvatar user={user} />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-extrabold">{user.name}</p>
+              <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">{user.username}</p>
+            </div>
+          </div>
+
+          <Link
+            href="/settings"
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            <FiSettings className="size-4" aria-hidden />
+            Settings
+          </Link>
+
+          <button
+            type="button"
+            role="menuitem"
+            onClick={handleSignOut}
+            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground cursor-pointer"
+          >
+            <FiLogOut className="size-4" aria-hidden />
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MobileMenu({ onNavigate }: { onNavigate: () => void }) {
+  const user = useUserDisplay();
+
+  return (
+    <>
+      <div className="flex h-16 items-center justify-between border-b border-border px-5">
+        <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3 font-extrabold" aria-label="GitFusion dashboard">
+          <AppLogo className="size-7" />
+          GitFusion
+        </Link>
+        <button type="button" className="grid size-9 place-items-center rounded-lg text-muted-foreground" onClick={onNavigate} aria-label="Close navigation">
+          <FiX className="size-5" aria-hidden />
+        </button>
       </div>
 
-      <div className="flex w-full">
-        <aside
-          className={`sticky left-0 top-0 hidden h-screen shrink-0 border-r border-gray-200 bg-card transition-[width] duration-200 dark:border-gray-800 lg:block ${isSidebarCollapsed ? "w-20" : "w-62"}`}
-        >
-          <Sidebar collapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed((collapsed) => !collapsed)} />
-        </aside>
-        <main className="min-w-0 flex-1 overflow-x-hidden py-3 px-6 lg:px-8">
-          <div className="mx-auto w-full min-w-0">
-            <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between md:mt-3">
-              <div className="min-w-0">
-                <p className="hidden sm:block text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Dashboard</p>
-                <h1 className="mt-1 text-3xl font-semibold sm:font-extrabold tracking-normal sm:text-3xl">{title}</h1>
-                <p className="mt-1 max-w-2xl text-lg sm:text-sm tracking-wide sm:tracking-normal leading-6 text-muted-foreground">{description}</p>
-              </div>
-              <div className="flex w-full min-w-0 flex-col gap-3 xl:w-auto xl:flex-row xl:items-center xl:justify-end">
-                <SyncStatusPanel sync={syncStatus ?? null} providers={syncProviders ?? []} actions={syncActions} />
-                <div className="hidden xl:flex shrink-0 flex-wrap items-center gap-3">
-                  {actions}
-                  {/* <ThemeToggle /> */}
-                </div>
-              </div>
-            </header>
-            {children}
+      <nav className="flex-1 space-y-1 p-4" aria-label="Mobile navigation">
+        {navItems.map((item) => (
+          <MobileNavItem key={item.label} item={item} onNavigate={onNavigate} />
+        ))}
+        <MobileNavItem item={{ label: "Settings", href: "/settings", icon: FiSettings }} onNavigate={onNavigate} />
+      </nav>
+
+      <div className="border-t border-border p-4">
+        <div className="flex min-w-0 items-center gap-3 rounded-lg bg-background p-3">
+          <UserAvatar user={user} />
+          <div className="min-w-0">
+            <div className="truncate text-sm font-extrabold">{user.name}</div>
+            <div className="mt-1 truncate text-xs text-muted-foreground">{user.username}</div>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </>
+  );
+}
+
+function MobileNavItem({ item, onNavigate }: { item: SidebarItem; onNavigate: () => void }) {
+  const pathname = usePathname();
+  const Icon = item.icon;
+  const isActive = item.href === pathname;
+  const classes = `flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold transition ${
+    isActive
+      ? "bg-primary/18 text-primary ring-1 ring-primary/25"
+      : item.disabled
+        ? "cursor-not-allowed text-muted-foreground/55"
+        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+  }`;
+
+  if (!item.href || item.disabled) {
+    return (
+      <button type="button" className={classes} disabled title="Coming soon">
+        <Icon className="size-4" aria-hidden />
+        {item.label}
+        <span className="ml-auto text-[0.65rem] font-extrabold uppercase">Soon</span>
+      </button>
+    );
+  }
+
+  return (
+    <Link href={item.href} onClick={onNavigate} className={classes}>
+      <Icon className="size-4" aria-hidden />
+      {item.label}
+    </Link>
   );
 }
 
@@ -138,7 +441,7 @@ function SyncStatusPanel({ sync, providers, actions }: { sync: DashboardSyncStat
 
   if (!sync || sync.status === "idle") {
     return actions ? (
-      <div className="flex min-h-[52px] w-full shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-card shadow-sm dark:border-gray-800 xl:w-auto">
+      <div className="flex h-10 shrink-0 overflow-hidden rounded-lg border border-border bg-card/70">
         {actions}
       </div>
     ) : null;
@@ -148,32 +451,26 @@ function SyncStatusPanel({ sync, providers, actions }: { sync: DashboardSyncStat
   const shownProviders = providers.length ? providers : (["github", "gitlab"] satisfies AccountProvider[]);
 
   return (
-    <div ref={panelRef} className="relative w-full min-w-0 shrink-0 xl:w-auto">
-      <div className="flex min-h-[52px] w-full overflow-hidden rounded-lg border border-gray-200 bg-card shadow-sm transition focus-within:ring-2 focus-within:ring-primary/35 dark:border-gray-800 xl:w-auto">
+    <div ref={panelRef} className="relative min-w-0 shrink-0">
+      <div className="flex h-10 overflow-hidden rounded-lg border border-border bg-card/70 transition focus-within:ring-2 focus-within:ring-primary/35">
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
-          className="flex min-w-0 flex-1 items-center gap-3 px-3 text-left transition hover:bg-gray-50 focus:outline-none dark:hover:bg-gray-900/70 min-[420px]:px-4 md:min-w-[15rem] xl:min-w-[15rem]"
+          className="flex min-w-0 flex-1 items-center gap-2 px-3 text-left transition hover:bg-muted"
           aria-expanded={isOpen}
           aria-haspopup="dialog"
         >
-        <span className={"inline-flex size-8 shrink-0 items-center justify-center rounded-full " + summary.iconClassName}>
-          <summary.Icon
-            className={"size-4 " + (sync.status === "syncing" ? "animate-pulse" : "")}
-            aria-hidden
-          />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-extrabold text-foreground">{summary.title}</span>
-          <span className="block truncate text-xs font-medium text-muted-foreground">{summary.detail}</span>
-        </span>
-        <FiChevronDown
-          className={"size-4 shrink-0 text-muted-foreground transition-transform cursor-pointer " + (isOpen ? "rotate-180" : "")}
-          aria-hidden
-        />
+          <span className={"inline-flex size-6 shrink-0 items-center justify-center rounded-full " + summary.iconClassName}>
+            <summary.Icon className={"size-3.5 " + (sync.status === "syncing" ? "animate-pulse" : "")} aria-hidden />
+          </span>
+          <span className="hidden min-w-0 sm:block">
+            <span className="block truncate text-xs font-extrabold text-foreground">{summary.title}</span>
+            <span className="block max-w-36 truncate text-[0.68rem] font-medium text-muted-foreground">{summary.detail}</span>
+          </span>
+          <FiChevronDown className={"size-4 shrink-0 text-muted-foreground transition-transform " + (isOpen ? "rotate-180" : "")} aria-hidden />
         </button>
         {actions && (
-          <div className="flex shrink-0 border-l border-gray-200 dark:border-gray-800">
+          <div className="flex shrink-0 border-l border-border">
             {actions}
           </div>
         )}
@@ -183,14 +480,14 @@ function SyncStatusPanel({ sync, providers, actions }: { sync: DashboardSyncStat
         <div
           role="dialog"
           aria-label="Last sync details"
-          className="absolute left-0 right-0 top-full z-40 mt-2 w-full rounded-lg border border-gray-200 bg-card p-4 shadow-xl dark:border-gray-800 xl:left-auto xl:w-80"
+          className="absolute right-0 top-full z-40 mt-2 w-80 rounded-xl border border-border bg-card p-4 shadow-2xl shadow-black/30"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-extrabold text-foreground">Last sync</p>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="grid size-8 place-items-center rounded-md text-muted-foreground transition hover:bg-gray-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/35 dark:hover:bg-gray-800"
+              className="grid size-8 place-items-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
               aria-label="Close sync details"
             >
               <FiX className="size-4" aria-hidden />
@@ -203,7 +500,7 @@ function SyncStatusPanel({ sync, providers, actions }: { sync: DashboardSyncStat
             ))}
           </div>
 
-          <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-3 text-xs font-medium text-muted-foreground dark:border-gray-800">
+          <div className="mt-4 flex items-center gap-2 border-t border-border pt-3 text-xs font-medium text-muted-foreground">
             <FiCalendar className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{summary.finishedDetail}</span>
           </div>
@@ -220,7 +517,7 @@ function ProviderSyncRow({ provider, sync }: { provider: AccountProvider; sync: 
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex min-w-0 items-center gap-3">
-        <span className={"grid size-8 shrink-0 place-items-center rounded-md " + (provider === "github" ? "bg-slate-950 text-white" : "bg-orange-100 text-amber-600 dark:bg-amber-800/30")}>
+        <span className={"grid size-8 shrink-0 place-items-center rounded-md " + (provider === "github" ? "bg-slate-950 text-white" : "bg-orange-500/15 text-orange-400")}>
           <Icon className="size-4" aria-hidden />
         </span>
         <span className="truncate text-sm font-extrabold text-foreground">{formatProviderName(provider)}</span>
@@ -231,6 +528,63 @@ function ProviderSyncRow({ provider, sync }: { provider: AccountProvider; sync: 
       </span>
     </div>
   );
+}
+
+function UserAvatar({ user }: { user: UserDisplay }) {
+  return (
+    <Avatar className="size-9 shrink-0 overflow-hidden rounded-full ring-1 ring-border">
+      <Avatar.Image src={user.avatarUrl || undefined} alt={user.name} className="size-full object-cover" />
+      <Avatar.Fallback className="flex size-full items-center justify-center text-xs font-extrabold">
+        {getInitials(user.name)}
+      </Avatar.Fallback>
+    </Avatar>
+  );
+}
+
+function useUserDisplay() {
+  const [display, setDisplay] = useState<UserDisplay>({
+    name: "GitFusion user",
+    username: "",
+    avatarUrl: null,
+  });
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+
+    const loadUser = async () => {
+      const supabase = createSupabaseBrowserClient();
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+
+      if (!user) {
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name,avatar_url")
+        .eq("id", user.id)
+        .maybeSingle<{ full_name: string | null; avatar_url: string | null }>();
+
+      const metadataName = typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name : "";
+      const metadataAvatarUrl = typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : "";
+      const fullName = profile?.full_name || metadataName || user.email || "GitFusion user";
+
+      setDisplay({
+        name: fullName,
+        username: user.email || "",
+        avatarUrl: profile?.avatar_url || metadataAvatarUrl || null,
+      });
+    };
+
+    loadUser();
+    window.addEventListener("gitfusion:profile-updated", loadUser);
+    return () => window.removeEventListener("gitfusion:profile-updated", loadUser);
+  }, []);
+
+  return display;
 }
 
 function getSyncSummary(sync: DashboardSyncStatus) {
@@ -259,15 +613,15 @@ function getSyncSummary(sync: DashboardSyncStatus) {
     detail,
     finishedDetail,
     iconClassName: isSyncing
-      ? "bg-blue-500/10 text-blue-500"
+      ? "bg-blue-500/10 text-blue-400"
       : isSynced
-        ? "bg-emerald-500/10 text-emerald-500"
-        : "bg-rose-500/10 text-rose-500",
+        ? "bg-emerald-500/10 text-emerald-400"
+        : "bg-rose-500/10 text-rose-400",
     statusClassName: isSyncing
-      ? "text-blue-500"
+      ? "text-blue-400"
       : isSynced
-        ? "text-emerald-500"
-        : "text-rose-500",
+        ? "text-emerald-400"
+        : "text-rose-400",
   };
 }
 
@@ -281,229 +635,6 @@ function formatSyncDate(value: string) {
     timeStyle: "short",
   }).format(new Date(value));
 }
-
-function MobileTopbar({ onOpen }: { onOpen: () => void }) {
-  const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState("Git Fusion user");
-
-  useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      return;
-    }
-
-    const loadUser = async () => {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
-
-      if (!user) {
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name,avatar_url")
-        .eq("id", user.id)
-        .maybeSingle<{ full_name: string | null; avatar_url: string | null }>();
-
-      const metadataName = typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name : "";
-      const metadataAvatarUrl = typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : "";
-      const fullName = profile?.full_name || metadataName || user.email;
-
-      setDisplayName(fullName || "Git Fusion user");
-      setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || null);
-    };
-
-    loadUser();
-    window.addEventListener("gitfusion:profile-updated", loadUser);
-    return () => window.removeEventListener("gitfusion:profile-updated", loadUser);
-  }, []);
-
-  return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between sm:border-b sm:border-gray-200 bg-background sm:bg-card px-5 dark:border-gray-800">
-      <Link href="/dashboard" className="order-2 lg:order-1 flex items-center gap-2 text-lg sm:text-md font-extrabold">
-        <AppLogo className="size-6 sm:size-5" aria-hidden/>
-        Git Fusion
-      </Link>
-      <button
-        type="button"
-        onClick={onOpen}
-        className="order-1 lg:order-2 grid size-10 place-items-center rounded-md border border-gray-200 text-muted-foreground dark:border-gray-800"
-        aria-label="Open navigation"
-      >
-        <FiMenu className="size-5" aria-hidden />
-      </button>
-      <Avatar className="order-3 lg:hide size-8 shrink-0 overflow-hidden rounded-full">
-        <Avatar.Image
-          src={displayAvatarUrl || undefined}
-          alt={displayName}
-          className="size-full object-cover"
-        />
-
-        <Avatar.Fallback className="flex size-full items-center justify-center">
-          {getInitials(displayName)}
-        </Avatar.Fallback>
-      </Avatar>
-    </header>
-  );
-}
-
-function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: { onNavigate?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [displayName, setDisplayName] = useState("Git Fusion user");
-  const [displayUsername, setDisplayUsername] = useState("");
-  const [displayAvatarUrl, setDisplayAvatarUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      return;
-    }
-
-    const loadUser = async () => {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
-
-      if (!user) {
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name,avatar_url")
-        .eq("id", user.id)
-        .maybeSingle<{ full_name: string | null; avatar_url: string | null }>();
-
-      const metadataName = typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name : "";
-      const metadataAvatarUrl = typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : "";
-      const fullName = profile?.full_name || metadataName || user.email;
-
-      setDisplayName(fullName || "Git Fusion user");
-      setDisplayUsername(user.email || "");
-      setDisplayAvatarUrl(profile?.avatar_url || metadataAvatarUrl || null);
-    };
-
-    loadUser();
-    window.addEventListener("gitfusion:profile-updated", loadUser);
-    return () => window.removeEventListener("gitfusion:profile-updated", loadUser);
-  }, []);
-
-  const handleSignOut = async () => {
-    if (isSupabaseConfigured()) {
-      const supabase = createSupabaseBrowserClient();
-      await supabase.auth.signOut();
-    }
-
-    onNavigate?.();
-    router.push("/sign-in");
-    router.refresh();
-  };
-
-  return (
-    <div className="flex h-full flex-col">
-      <div className={`flex h-16 items-center border-b border-gray-200 dark:border-gray-800 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
-        <Link href="/dashboard" onClick={onNavigate} className={`flex items-center font-extrabold ${collapsed ? "justify-center" : "gap-3"}`} aria-label="Git Fusion dashboard" title={collapsed ? "Git Fusion" : undefined}>
-          <AppLogo className="size-6" />
-          {!collapsed && "Git Fusion"}
-        </Link>
-        {onNavigate ? (
-          <button type="button" className="grid size-9 place-items-center rounded-md text-muted-foreground" onClick={onNavigate} aria-label="Close navigation">
-            <FiX className="size-5" aria-hidden />
-          </button>
-        ) : onToggleCollapse ? (
-          <button type="button" className="grid size-8 place-items-center rounded-md text-muted-foreground transition hover:bg-gray-100 hover:text-foreground dark:hover:bg-gray-800 cursor-pointer" onClick={onToggleCollapse} aria-label={collapsed ? "Expand navigation" : "Collapse navigation"} title={collapsed ? "Expand navigation" : "Collapse navigation"}>
-            {collapsed ? <FiChevronRight className="size-4" aria-hidden /> : <FiChevronLeft className="size-4" aria-hidden />}
-          </button>
-        ) : null}
-      </div>
-
-      <nav className={`flex-1 space-y-1 py-4 ${collapsed ? "px-2" : "px-3"}`} aria-label="Dashboard navigation">
-        {sidebarItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = item.href === pathname;
-          const classes = `flex w-full items-center rounded-md py-2.5 text-sm font-bold transition ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${
-            isActive
-              ? "bg-primary text-white"
-              : item.disabled
-                ? "cursor-not-allowed text-muted-foreground/55"
-                : "text-muted-foreground hover:bg-gray-100 hover:text-foreground dark:hover:bg-gray-800"
-          }`;
-
-          if (!item.href || item.disabled) {
-            return (
-              <button key={item.label} type="button" className={classes} disabled title="Coming soon">
-                <Icon className={`shrink-0 ${collapsed ? "size-6" : "size-4"}`} aria-hidden />
-                {!collapsed && item.label}
-                {!collapsed && <span className="ml-auto text-[0.65rem] font-extrabold uppercase">Soon</span>}
-              </button>
-            );
-          }
-
-          return (
-            <Link key={item.href} href={item.href} onClick={onNavigate} className={classes}>
-              <Icon className={`shrink-0 ${collapsed ? "size-6" : "size-4"}`} strokeWidth={2} aria-hidden />
-              {!collapsed && item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div
-        className={`space-y-3 border-t border-gray-200 dark:border-gray-800 ${
-          collapsed ? "p-2" : "p-4"
-        }`}
-      >
-        <div
-          className={`hidden sm:flex items-center rounded-md ${
-            collapsed
-              ? "justify-center p-2"
-              : "gap-3 bg-background p-3"
-          }`}
-        >
-          <Avatar className="size-8 shrink-0 overflow-hidden rounded-full">
-            <Avatar.Image
-              src={displayAvatarUrl || undefined}
-              alt={displayName}
-              className="size-full object-cover"
-            />
-
-            <Avatar.Fallback className="flex size-full items-center justify-center">
-              {getInitials(displayName)}
-            </Avatar.Fallback>
-          </Avatar>
-
-          {!collapsed && (
-            <div className="min-w-0">
-              <div className="truncate text-sm font-extrabold">
-                {displayName}
-              </div>
-
-              <div className="mt-1 truncate text-xs text-muted-foreground">
-                {displayUsername}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className={`flex w-full items-center justify-center rounded-md border border-gray-200 py-2 text-sm font-extrabold text-muted-foreground transition hover:border-primary hover:text-primary dark:border-gray-800 cursor-pointer ${
-            collapsed ? "px-2" : "gap-2 px-3"
-          }`}
-          aria-label="Sign out"
-          title={collapsed ? "Sign out" : undefined}
-        >
-          <FiLogOut className="size-4" aria-hidden />
-
-          {!collapsed && "Sign out"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 
 function getInitials(value: string) {
   const parts = value.trim().split(/\s+/).filter(Boolean);

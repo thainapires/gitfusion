@@ -5,6 +5,9 @@ export type ConnectedAccountRow = {
   username: string;
   provider_user_id: string;
   access_token_encrypted: string;
+  refresh_token_encrypted: string | null;
+  expires_at: string | null;
+  oauth_redirect_uri: string | null;
   updated_at?: string;
   last_sync_at?: string | null;
 };

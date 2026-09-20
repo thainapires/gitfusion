@@ -5,11 +5,12 @@ import { DashboardSyncStatus } from "@/types/dashboard";
 import {
   buildDashboardOverview,
   buildDashboardOverviewFromStoredDailyTotals,
+  ProviderApiError,
 } from "@/lib/dashboard/overview";
-import { decryptProviderToken } from "@/lib/security/tokens";
 import {
   createSupabaseAdminClient,
 } from "@/lib/supabase/server";
+import { getValidProviderAccessToken } from "@/server/modules/integrations/provider-token.service";
 
 import {
   buildDashboardCacheKey,
@@ -28,13 +29,13 @@ import {
 } from "./dashboard.repository";
 import { ConnectedAccountRow } from "./dashboard.types";
 import { getAuthenticatedUser } from "@/server/auth/auth.service";
-import { AppError } from "@/server/errors/app-error";
 
 const STALE_RUNNING_SYNC_MS = 15 * 60 * 1000;
 
 type GetDashboardOverviewParams = {
   accessToken: string;
   forceRefresh?: boolean;
+  requestOrigin: string;
 };
 
 type FetchAccount = {
@@ -51,9 +52,15 @@ type SyncRunRow = {
 export async function getDashboardOverview({
   accessToken,
   forceRefresh = false,
+  requestOrigin,
 }: GetDashboardOverviewParams) {
   const { id: userId } = await getAuthenticatedUser(accessToken);
-  const accounts = await getConnectedAccounts(userId);
+  const accounts = (await getConnectedAccounts(userId)).map((account) => ({
+    ...account,
+    oauth_redirect_uri:
+      account.oauth_redirect_uri ||
+      `${requestOrigin}/api/integrations/${account.provider}/callback`,
+  }));
   const cacheKey = buildDashboardCacheKey(accounts);
 
   if (!forceRefresh) {
@@ -127,7 +134,7 @@ async function getConnectedAccounts(
   const { data, error } = await supabase
     .from("connected_accounts")
     .select(
-      "provider,username,provider_user_id,access_token_encrypted,updated_at,last_sync_at",
+      "provider,username,provider_user_id,access_token_encrypted,refresh_token_encrypted,expires_at,oauth_redirect_uri,updated_at,last_sync_at",
     )
     .eq("user_id", userId);
 
@@ -259,19 +266,8 @@ async function syncDashboardOverview({
   syncRunId: string;
 }) {
   try {
-    const fetchAccounts = getFetchAccounts(accounts);
-
-    if (
-      accounts.length &&
-      fetchAccounts.length !== accounts.length
-    ) {
-      throw new AppError(
-        "One or more connected provider tokens are unavailable. Reconnect the affected account.",
-        409,
-      );
-    }
-
-    const overview = await buildDashboardOverview(fetchAccounts);
+    const { overview, fetchAccounts } =
+      await buildDashboardOverviewWithValidTokens(userId, accounts);
 
     await persistDailyTotals(userId, overview);
 
@@ -305,22 +301,59 @@ async function syncDashboardOverview({
   }
 }
 
-function getFetchAccounts(
+async function buildDashboardOverviewWithValidTokens(
+  userId: string,
   accounts: ConnectedAccountRow[],
-): FetchAccount[] {
-  return accounts
-    .map((account) => ({
+): Promise<{
+  overview: Awaited<ReturnType<typeof buildDashboardOverview>>;
+  fetchAccounts: FetchAccount[];
+}> {
+  const fetchAccounts = await Promise.all(
+    accounts.map(async (account) => ({
       provider: account.provider,
       username: account.username,
       provider_user_id: account.provider_user_id,
-      access_token: decryptProviderToken(
-        account.access_token_encrypted,
-      ),
-    }))
-    .filter(
-      (account): account is FetchAccount =>
-        Boolean(account.access_token),
+      access_token: await getValidProviderAccessToken({
+        userId,
+        account,
+      }),
+    })),
+  );
+
+  try {
+    return {
+      overview: await buildDashboardOverview(fetchAccounts),
+      fetchAccounts,
+    };
+  } catch (error) {
+    if (!(error instanceof ProviderApiError) || error.status !== 401) {
+      throw error;
+    }
+
+    const connectedAccount = accounts.find(
+      (account) => account.provider === error.provider,
     );
+
+    if (!connectedAccount) {
+      throw error;
+    }
+
+    const refreshedAccessToken = await getValidProviderAccessToken({
+      userId,
+      account: connectedAccount,
+      forceRefresh: true,
+    });
+    const retryAccounts = fetchAccounts.map((account) =>
+      account.provider === error.provider
+        ? { ...account, access_token: refreshedAccessToken }
+        : account,
+    );
+
+    return {
+      overview: await buildDashboardOverview(retryAccounts),
+      fetchAccounts: retryAccounts,
+    };
+  }
 }
 
 async function getDashboardSyncStatus(

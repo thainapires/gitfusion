@@ -26,19 +26,19 @@
 }
 
 .dark {
-  --background: #080a17;
-  --foreground: #f4f4f5;
+  --background: #070a16;
+  --foreground: #f4f6fb;
 
-  --surface: #101421;
-  --card: #151927;
-  --card-hover: #1a1f2f;
+  --surface: #0d1222;
+  --card: #0d1324;
+  --card-hover: #131a2d;
 
-  --border: #252a3b;
+  --border: #27315a;
 
-  --muted: #1b2030;
-  --muted-foreground: #9299aa;
+  --muted: #171d34;
+  --muted-foreground: #97a0b8;
 
-  --heatmap-empty: #1b2030;
+  --heatmap-empty: #151b34;
 }
 
 @theme {
@@ -62,7 +62,10 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at 70% -12%, rgba(139, 92, 246, 0.16), transparent 30rem),
+    radial-gradient(circle at 4% 8%, rgba(76, 29, 149, 0.16), transparent 24rem),
+    var(--background);
   color: var(--foreground);
 }
 
@@ -128,8 +131,8 @@ body {
 }
 
 .gf-contribution-calendar .react-calendar-heatmap rect {
-  rx: 2px;
-  ry: 2px;
+  rx: 2.5px;
+  ry: 2.5px;
 }
 
 /* Empty days */

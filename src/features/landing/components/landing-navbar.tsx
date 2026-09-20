@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FiLogOut } from "react-icons/fi";
+import { FiArrowRight, FiLogOut } from "react-icons/fi";
 import type { LandingSessionUser } from "./landing-page";
 import { AppLogo } from "@/shared/components/app-logo";
 
@@ -9,60 +9,59 @@ type LandingNavbarProps = {
   onSignOut: () => void;
 };
 
+const navItems = [
+  { label: "Product", href: "#product" },
+  { label: "Features", href: "#features" },
+  { label: "About", href: "#about" },
+  { label: "Resources", href: "#resources" },
+];
+
 export function LandingNavbar({ user, isCheckingSession, onSignOut }: LandingNavbarProps) {
   return (
     <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
       <Link
         href={user ? "/dashboard" : "/"}
-        className="group flex items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-300"
-        aria-label={user ? "Git Fusion dashboard" : "Git Fusion home"}
+        className="group flex shrink-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        aria-label={user ? "GitFusion dashboard" : "GitFusion home"}
       >
-        <AppLogo className="size-9" />
-
-        <span className="text-lg font-extrabold tracking-normal text-white sm:text-xl">
-          Git Fusion
-        </span>
+        <AppLogo className="size-8" />
+        <span className="text-base font-extrabold tracking-normal text-white sm:text-lg">GitFusion</span>
       </Link>
 
-      {user && (
-        <div className="flex gap-12">
+      <nav className="hidden items-center gap-9 lg:flex" aria-label="Primary navigation">
+        {navItems.map((item) => (
           <Link
-            href="/dashboard"
-            className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
+            key={item.label}
+            href={item.href}
+            className="text-sm font-bold text-slate-300 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           >
-            Dashboard
+            {item.label}
           </Link>
-          <Link
-            href="/settings"
-            className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
-          >
-            Settings
-          </Link>
-        </div>
-      )}
+        ))}
+      </nav>
 
-      <nav className={`flex items-center ${user ? "" : "gap-3 sm:gap-4"}`} aria-label="Primary navigation">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {user ? (
           <>
             <Link
               href="/dashboard"
-              className="flex min-w-0 items-center gap-2 rounded-md py-1.5 text-sm font-extrabold text-white transition"
+              className="hidden min-h-10 items-center gap-2 rounded-md border border-white/15 bg-white/[0.03] px-3 text-sm font-extrabold text-white transition hover:border-primary/50 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:inline-flex"
               aria-label={`Open dashboard for ${user.name}`}
             >
               <span
-                className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary bg-cover bg-center text-xs text-white"
+                className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-primary bg-cover bg-center text-[0.65rem] text-white"
                 style={user.avatarUrl ? { backgroundImage: `url(${user.avatarUrl})` } : undefined}
                 aria-hidden
               >
                 {!user.avatarUrl && getInitials(user.name)}
               </span>
-              <span className="hidden max-w-36 truncate sm:inline">{user.name.trim().split(/\s+/)[0]}</span>
+              <span className="hidden max-w-28 truncate md:inline">Dashboard</span>
             </Link>
 
             <button
               type="button"
               onClick={onSignOut}
-              className="grid size-10 place-items-center text-slate-400 transition hover:text-primary cursor-pointer"
+              className="grid size-10 place-items-center rounded-md border border-white/15 text-slate-300 transition hover:border-primary/50 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary cursor-pointer"
               aria-label="Sign out"
               title="Sign out"
             >
@@ -73,20 +72,22 @@ export function LandingNavbar({ user, isCheckingSession, onSignOut }: LandingNav
           <>
             <Link
               href="/sign-in"
-              className="hidden text-sm font-bold text-slate-400 transition hover:text-white sm:inline-flex"
+              className="hidden min-h-10 items-center rounded-md border border-white/15 bg-white/[0.03] px-4 text-sm font-extrabold text-white transition hover:border-primary/50 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:inline-flex"
             >
               Sign in
             </Link>
             <Link
               href="/sign-up"
-              className="rounded-md bg-primary px-4 py-2 text-sm font-extrabold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
+              className="inline-flex min-h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-extrabold text-white transition hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:px-5"
               aria-disabled={isCheckingSession}
             >
-              Get started
+              <span className="hidden sm:inline">Get Started Free</span>
+              <span className="sm:hidden">Start</span>
+              <FiArrowRight className="size-4" aria-hidden />
             </Link>
           </>
         )}
-      </nav>
+      </div>
     </header>
   );
 }

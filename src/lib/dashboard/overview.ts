@@ -16,11 +16,35 @@ type ProviderDashboardData = {
   pullOrMergeRequests: number;
 };
 
+type GitHubDashboardGraphResponse = {
+  data?: {
+    viewer?: {
+      contributionsCollection?: {
+        contributionCalendar?: { weeks?: { contributionDays?: { date: string; contributionCount: number }[] }[] };
+        pullRequestContributions?: { totalCount: number };
+      };
+    };
+  };
+  errors?: { message?: string }[];
+  message?: string;
+};
+
 export type StoredDailyTotal = {
   date: string;
   github_count: number;
   gitlab_count: number;
 };
+
+export class ProviderApiError extends Error {
+  constructor(
+    public readonly provider: AccountProvider,
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ProviderApiError";
+  }
+}
 
 const dashboardDays = 365;
 const gitlabApiBaseUrl = "https://gitlab.com/api/v4";
@@ -157,20 +181,18 @@ async function fetchGitHubDashboardData(account: ConnectedAccountRow, since: str
       variables: { from, to },
     }),
   });
-  const graphJson = await graphResponse.json() as {
-    data?: {
-      viewer?: {
-        contributionsCollection?: {
-          contributionCalendar?: { weeks?: { contributionDays?: { date: string; contributionCount: number }[] }[] };
-          pullRequestContributions?: { totalCount: number };
-        };
-      };
-    };
-    errors?: { message: string }[];
-  };
+  const graphJson = await readJsonResponse<GitHubDashboardGraphResponse>(graphResponse);
+
+  if (graphResponse.status === 401) {
+    throw new ProviderApiError(
+      "github",
+      401,
+      getGitHubDashboardErrorMessage(graphResponse, graphJson),
+    );
+  }
 
   if (!graphResponse.ok || graphJson.errors?.length) {
-    throw new Error(graphJson.errors?.[0]?.message || "Unable to load GitHub dashboard data.");
+    throw new Error(getGitHubDashboardErrorMessage(graphResponse, graphJson));
   }
 
   const daily = new Map<string, number>();
@@ -200,6 +222,8 @@ async function fetchGitHubRepos(account: ConnectedAccountRow): Promise<Repositor
     },
   });
 
+  throwIfUnauthorized(response, "github");
+
   if (!response.ok) {
     return [];
   }
@@ -223,6 +247,8 @@ async function fetchGitHubEvents(account: ConnectedAccountRow) {
     },
   });
 
+  throwIfUnauthorized(response, "github");
+
   if (!response.ok) {
     return { activities: [], pullRequests: 0 };
   }
@@ -245,6 +271,32 @@ async function fetchGitHubEvents(account: ConnectedAccountRow) {
   });
 
   return { activities, pullRequests };
+}
+
+async function readJsonResponse<T>(response: Response): Promise<T> {
+  try {
+    return await response.json() as T;
+  } catch {
+    return {} as T;
+  }
+}
+
+function getGitHubDashboardErrorMessage(
+  response: Response,
+  payload: GitHubDashboardGraphResponse,
+) {
+  const graphQLError = payload.errors?.find((error) => error.message)?.message;
+
+  if (graphQLError) {
+    return graphQLError;
+  }
+
+  if (payload.message) {
+    return payload.message;
+  }
+
+  const statusText = response.statusText || "GitHub API error";
+  return `Unable to load GitHub dashboard data (${response.status} ${statusText}).`;
 }
 
 async function fetchGitLabDashboardData(account: ConnectedAccountRow, since: string): Promise<ProviderDashboardData> {
@@ -287,6 +339,8 @@ async function fetchGitLabCalendarContributions(account: ConnectedAccountRow, si
   const response = await fetch(`https://gitlab.com/users/${encodeURIComponent(account.username)}/calendar.json`, {
     headers: { Authorization: `Bearer ${account.access_token}` },
   });
+
+  throwIfUnauthorized(response, "gitlab");
 
   if (!response.ok) {
     return new Map<string, number>();
@@ -355,6 +409,8 @@ async function fetchAllGitLabPages<T>(path: string, accessToken: string) {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
+    throwIfUnauthorized(response, "gitlab");
+
     if (!response.ok) {
       break;
     }
@@ -365,6 +421,19 @@ async function fetchAllGitLabPages<T>(path: string, accessToken: string) {
   }
 
   return items;
+}
+
+function throwIfUnauthorized(
+  response: Response,
+  provider: AccountProvider,
+): void {
+  if (response.status === 401) {
+    throw new ProviderApiError(
+      provider,
+      401,
+      `${provider} credentials are invalid or expired.`,
+    );
+  }
 }
 
 function withGitLabPage(path: string, page: string) {

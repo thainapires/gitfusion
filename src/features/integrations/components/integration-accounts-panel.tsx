@@ -7,7 +7,6 @@ import { notify } from "@/lib/notifications/toast";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { AccountProvider, ConnectedAccount } from "@/types/mock-app";
 import { AccountConnectionCard } from "./account-connection-card";
-import { TbLayoutDashboard } from "react-icons/tb";
 
 type ConnectedAccountResponse = {
   provider: AccountProvider;
@@ -22,6 +21,7 @@ type IntegrationAccountsPanelProps = {
   compact?: boolean;
   showContinue?: boolean;
   redirectTo?: string;
+  className?: string;
 };
 
 const providerAccounts: ConnectedAccount[] = [
@@ -47,7 +47,7 @@ const providerAccounts: ConnectedAccount[] = [
   },
 ];
 
-export function IntegrationAccountsPanel({ compact = false, showContinue = false, redirectTo = "/connect-accounts" }: IntegrationAccountsPanelProps) {
+export function IntegrationAccountsPanel({ compact = false, showContinue = false, redirectTo = "/connect-accounts", className = "" }: IntegrationAccountsPanelProps) {
   const [accounts, setAccounts] = useState<ConnectedAccount[]>(() => buildAccounts([]));
 
   const loadAccounts = useCallback(async () => {
@@ -171,24 +171,23 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
   const connectedCount = accounts.filter((account) => account.status === "connected").length;
 
   return (
-    <div className="min-w-0 space-y-4">
-      <div className="space-y-4 rounded-lg border border-gray-200 bg-card p-4 shadow-sm dark:border-gray-800">
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-2">
-              <TbLayoutDashboard className="shrink-0 text-primary dark:text-primary-dark" size={24}/>
-              <h2 className="min-w-0 text-base font-extrabold sm:text-lg">Connected Accounts</h2>
-            </div>
-            <h3 className="shrink-0 text-sm font-semibold text-muted-foreground">
-              {connectedCount}/{accounts.length} connected
-            </h3>
+    <div className={`min-w-0 space-y-4 ${className}`}>
+      <div className="space-y-3 rounded-lg border border-border bg-card/85 p-4 shadow-sm">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <h2 className="min-w-0 text-base font-extrabold">Connected accounts</h2>
+          <h3 className="shrink-0 text-xs font-semibold text-muted-foreground">
+            {connectedCount}/{accounts.length} connected
+          </h3>
         </div>
-        {accounts.map((account) => (
-          <AccountConnectionCard key={account.provider} account={account} onConnect={connectAccount} onDisconnect={disconnectAccount} compact={compact} />
-        ))}
+        <div className={compact ? "grid grid-cols-1 sm:grid-cols-2 gap-3 xl:grid-cols-1" : "space-y-3"}>
+          {accounts.map((account) => (
+            <AccountConnectionCard key={account.provider} account={account} onConnect={connectAccount} onDisconnect={disconnectAccount} compact={compact} />
+          ))}
+        </div>
       </div>
 
       {showContinue && (
-        <div className="mt-8 flex flex-col gap-3 border-t border-gray-200 pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-muted-foreground">{connectedCount} of {accounts.length} accounts connected</p>
           <Link
             href="/dashboard"

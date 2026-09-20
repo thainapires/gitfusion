@@ -13,6 +13,18 @@ type SaveConnectedAccountParams = {
   tokenType: string | null;
   scopes: string[];
   expiresAt: string | null;
+  oauthRedirectUri: string;
+};
+
+type UpdateConnectedAccountTokensParams = {
+  userId: string;
+  provider: AccountProvider;
+  accessTokenEncrypted: string;
+  refreshTokenEncrypted: string | null;
+  tokenType: string | null;
+  scopes: string[] | null;
+  expiresAt: string | null;
+  oauthRedirectUri: string | null;
 };
 
 export async function getConnectedAccounts(userId: string) {
@@ -47,6 +59,7 @@ export async function saveConnectedAccount({
   tokenType,
   scopes,
   expiresAt,
+  oauthRedirectUri,
 }: SaveConnectedAccountParams) {
   const supabase = createSupabaseAdminClient();
   const now = new Date().toISOString();
@@ -66,6 +79,7 @@ export async function saveConnectedAccount({
         token_type: tokenType,
         scopes,
         expires_at: expiresAt,
+        oauth_redirect_uri: oauthRedirectUri,
         connected_at: now,
         updated_at: now,
       },
@@ -88,6 +102,41 @@ export async function deleteConnectedAccount(
   const { error } = await supabase
     .from("connected_accounts")
     .delete()
+    .eq("user_id", userId)
+    .eq("provider", provider);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function updateConnectedAccountTokens({
+  userId,
+  provider,
+  accessTokenEncrypted,
+  refreshTokenEncrypted,
+  tokenType,
+  scopes,
+  expiresAt,
+  oauthRedirectUri,
+}: UpdateConnectedAccountTokensParams) {
+  const supabase = createSupabaseAdminClient();
+  const values: Record<string, unknown> = {
+    access_token_encrypted: accessTokenEncrypted,
+    refresh_token_encrypted: refreshTokenEncrypted,
+    token_type: tokenType,
+    expires_at: expiresAt,
+    oauth_redirect_uri: oauthRedirectUri,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (scopes) {
+    values.scopes = scopes;
+  }
+
+  const { error } = await supabase
+    .from("connected_accounts")
+    .update(values)
     .eq("user_id", userId)
     .eq("provider", provider);
 
