@@ -128,6 +128,7 @@ export async function completeIntegration({
     tokenType: tokenData.token_type ?? null,
     scopes,
     expiresAt,
+    oauthRedirectUri: redirectUri,
   });
 
   await invalidateDashboardCache(stateRow.user_id);

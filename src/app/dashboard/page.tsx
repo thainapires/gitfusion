@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaFire } from "react-icons/fa";
 import { FiActivity, FiFolder, FiGitPullRequest, FiRefreshCw } from "react-icons/fi";
+import { Tooltip } from "react-tooltip";
 import { IntegrationAccountsPanel } from "@/features/integrations/components/integration-accounts-panel";
 import { AuthenticatedLayout } from "@/shared/app-shell/authenticated-layout";
 import { ActivityList } from "@/features/dashboard/components/activity-list";
 import { ContributionChart } from "@/features/dashboard/components/contribution-chart";
 import { MetricCard } from "@/features/dashboard/components/metric-card";
+import { MetricsCarousel } from "@/features/dashboard/components/metrics-carousel";
 import { RepositoryTable } from "@/features/dashboard/components/repository-table";
 import { readApiJson } from "@/lib/api/response";
 import { notify } from "@/lib/notifications/toast";
@@ -112,7 +113,7 @@ export default function DashboardPage() {
 
   const activeDays = overview?.dailyContributions.filter((day) => day.total > 0).length ?? 0;
   const currentStreak = overview ? getCurrentStreak(overview.dailyContributions) : 0;
-  const dashboardMetrics = useMemo(() => overview ? buildDashboardMetrics(overview, currentStreak) : [], [overview, currentStreak]);
+  const dashboardMetrics = useMemo(() => overview ? buildDashboardMetrics(overview) : [], [overview]);
 
   return (
     <AuthenticatedLayout
@@ -141,51 +142,47 @@ export default function DashboardPage() {
       {!isLoading && overview && !overview.hasConnections && <EmptyConnectionsState />}
 
       {!isLoading && overview?.hasConnections && (
-        <div className="space-y-4 lg:space-y-5">
+        <div className="mx-auto grid w-full max-w-[1600px] grid-cols-6 gap-4 lg:grid-cols-12 lg:gap-6">
           <DashboardHero
+            className="col-span-full"
             viewerName={viewerName}
             activeDays={activeDays}
             currentStreak={currentStreak}
           />
 
           {syncStatus?.status === "failed" && (
-            <InlineSyncAlert syncStatus={syncStatus} onRetry={() => loadOverview({ refresh: true })} isRefreshing={isRefreshing} />
+            <div className="col-span-full">
+              <InlineSyncAlert syncStatus={syncStatus} onRetry={() => loadOverview({ refresh: true })} isRefreshing={isRefreshing} />
+            </div>
           )}
 
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Dashboard metrics">
-            {dashboardMetrics.map((metric) => (
-              <MetricCard key={metric.label} metric={metric} />
-            ))}
-          </section>
+          <MetricsCarousel metrics={dashboardMetrics} />
+          {dashboardMetrics.map((metric) => (
+            <MetricCard key={metric.label} metric={metric} className="hidden sm:block sm:col-span-2 lg:col-span-4 xl:col-span-3" />
+          ))}
+          <IntegrationAccountsPanel compact redirectTo="/dashboard" className="col-span-full xl:col-span-3" />
 
-          <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,23rem)]">
-            <div className="min-w-0 space-y-5">
-              <ContributionChart data={overview.dailyContributions} />
-              <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-                <RepositoryTable repositories={overview.topRepositories} />
-                <ActivityOverview data={overview.dailyContributions} />
-              </div>
-              <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                <LanguagesBreakdown repositories={overview.topRepositories} totalContributions={getTotalContributions(overview.dailyContributions)} />
-                <IntegrationAccountsPanel compact redirectTo="/dashboard" />
-              </div>
+          <div className="col-span-full grid min-w-0 content-start gap-4 lg:col-span-8 lg:gap-6 xl:col-span-9">
+            <ContributionChart data={overview.dailyContributions} />
+            <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:gap-6">
+              <RepositoryTable repositories={overview.topRepositories} />
+              <ActivityOverview data={overview.dailyContributions} />
             </div>
-
-            <aside className="min-w-0 space-y-5">
-              <IntegrationAccountsPanel compact redirectTo="/dashboard" />
-              <ActivityList activities={overview.recentActivity} />
-              <KeepBuildingCard />
-            </aside>
           </div>
+
+          <aside className="col-span-full grid min-w-0 gap-4 md:grid-cols-2 lg:col-span-4 lg:flex lg:flex-col lg:gap-6 xl:col-span-3">
+            <ActivityList activities={overview.recentActivity} className="lg:flex-1" />
+            <LanguagesBreakdown repositories={overview.topRepositories} />
+          </aside>
         </div>
       )}
     </AuthenticatedLayout>
   );
 }
 
-function DashboardHero({ viewerName, activeDays, currentStreak }: { viewerName: string; activeDays: number; currentStreak: number }) {
+function DashboardHero({ viewerName, activeDays, currentStreak, className = "" }: { viewerName: string; activeDays: number; currentStreak: number; className?: string }) {
   return (
-    <section className="relative min-h-[178px] overflow-hidden rounded-none py-4 sm:py-6 lg:min-h-[188px]">
+    <section className={`relative overflow-hidden rounded-none py-4 sm:py-6 lg:min-h-[188px] ${className}`}>
       <div aria-hidden className="absolute inset-y-0 left-[-8%] w-1 bg-primary/80 blur-[1px]" />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_66%_35%,rgba(139,92,246,0.26),rgba(139,92,246,0.08)_35%,transparent_68%)]" />
       <Image
@@ -198,18 +195,26 @@ function DashboardHero({ viewerName, activeDays, currentStreak }: { viewerName: 
         className="pointer-events-none absolute bottom-[-6.5rem] right-[-4rem] hidden w-[58rem] max-w-none opacity-55 mix-blend-screen lg:block 2xl:right-[6rem]"
       />
 
-      <div className="relative z-10 grid min-h-[150px] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,19rem)] lg:items-center">
+      <div className="relative z-10 grid gap-4 lg:min-h-[150px] lg:grid-cols-[minmax(0,1fr)_minmax(17rem,19rem)] lg:items-center">
         <div className="min-w-0">
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-primary">Dashboard</p>
           <h1 className="mt-3 text-3xl font-extrabold leading-tight tracking-normal text-foreground sm:text-4xl">
             Good to see you again, {viewerName}! <span className="font-emoji">👋</span>
           </h1>
+
+          <div className="mt-3 flex items-center gap-3 rounded-lg border border-primary/25 bg-primary/10 px-4 py-2.5 lg:hidden">
+            <span className="text-lg" aria-hidden>🔥</span>
+            <p className="text-sm font-bold text-foreground">
+              <span className="font-extrabold">{currentStreak}</span> {currentStreak === 1 ? "day" : "days"} streak
+            </p>
+          </div>
+
           <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-muted-foreground sm:text-base">
             Here&apos;s your connected GitHub and GitLab activity overview.
           </p>
         </div>
 
-        <div className="relative rounded-lg border border-primary/25 bg-card/68 p-5 shadow-2xl shadow-primary/5 backdrop-blur-sm">
+        <div className="relative hidden rounded-lg border border-primary/25 bg-card/68 p-5 shadow-2xl shadow-primary/5 backdrop-blur-sm lg:block">
           <div className="flex items-center gap-4">
             <span className="grid size-12 place-items-center rounded-full border border-primary/30 bg-primary/15 text-2xl font-emoji" aria-hidden>
               🔥
@@ -291,9 +296,17 @@ function ActivityOverview({ data }: { data: DailyContribution[] }) {
           <polyline points={gitlabPoints} fill="none" stroke="#f97316" strokeWidth="1.8" vectorEffect="non-scaling-stroke" />
           <polyline points={githubPoints} fill="none" stroke="var(--primary)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
           {points.map((point, index) => (
-            <g key={months[index].label}>
+            <g
+              key={months[index].label}
+              tabIndex={0}
+              aria-label={`${months[index].label}: GitHub ${months[index].github}, GitLab ${months[index].gitlab}, total ${months[index].github + months[index].gitlab}`}
+              data-tooltip-id="activity-overview-tooltip"
+              data-tooltip-content={`${months[index].label} · GitHub: ${months[index].github} · GitLab: ${months[index].gitlab} · Total: ${months[index].github + months[index].gitlab}`}
+              className="cursor-help outline-none focus-visible:[&_circle]:stroke-white"
+            >
               <circle cx={point.x} cy={point.githubY} r="1.3" fill="var(--primary)" vectorEffect="non-scaling-stroke" />
               <circle cx={point.x} cy={point.gitlabY} r="1.15" fill="#f97316" vectorEffect="non-scaling-stroke" />
+              <rect x={Math.max(0, point.x - 4)} y="0" width={point.x < 4 || point.x > 96 ? 4 : 8} height="112" fill="transparent" />
             </g>
           ))}
         </svg>
@@ -301,11 +314,12 @@ function ActivityOverview({ data }: { data: DailyContribution[] }) {
       <div className="mt-3 flex justify-between text-[0.68rem] font-bold text-muted-foreground">
         {months.map((month) => <span key={month.label}>{month.label}</span>)}
       </div>
+      <Tooltip id="activity-overview-tooltip" />
     </section>
   );
 }
 
-function LanguagesBreakdown({ repositories, totalContributions }: { repositories: RepositorySummary[]; totalContributions: number }) {
+function LanguagesBreakdown({ repositories }: { repositories: RepositorySummary[] }) {
   const languages = getLanguageBreakdown(repositories);
   const gradient = languages.length
     ? `conic-gradient(${languages.map((language) => `${language.color} ${language.start}% ${language.end}%`).join(", ")})`
@@ -314,12 +328,9 @@ function LanguagesBreakdown({ repositories, totalContributions }: { repositories
   return (
     <section className="min-w-0 rounded-lg border border-border bg-card/85 p-5 shadow-sm">
       <h2 className="text-base font-extrabold">Languages</h2>
-      <div className="mt-5 grid gap-5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center">
-        <div className="relative mx-auto size-34 rounded-full" style={{ background: gradient }}>
-          <div className="absolute inset-5 grid place-items-center rounded-full bg-card text-center">
-            <p className="text-xl font-extrabold">{totalContributions.toLocaleString("en-US")}</p>
-            <p className="mt-1 text-[0.65rem] font-semibold leading-tight text-muted-foreground">total contributions</p>
-          </div>
+      <div className="mt-5 grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-5">
+        <div className="relative mx-auto size-22 rounded-full sm:size-34" style={{ background: gradient }}>
+          <div className="absolute inset-3 rounded-full bg-card sm:inset-5" />
         </div>
         <div className="space-y-3">
           {!languages.length && <p className="text-sm text-muted-foreground">No repository language data was returned yet.</p>}
@@ -336,27 +347,7 @@ function LanguagesBreakdown({ repositories, totalContributions }: { repositories
   );
 }
 
-function KeepBuildingCard() {
-  return (
-    <section className="relative min-h-[130px] overflow-hidden rounded-lg border border-primary/25 bg-card/85 p-5 shadow-sm">
-      <div className="relative z-10 max-w-48">
-        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Keep building</p>
-        <h2 className="mt-3 text-xl font-extrabold leading-tight">Small commits drive big results.</h2>
-      </div>
-      <div aria-hidden className="absolute bottom-4 right-4 flex items-end gap-2 opacity-80">
-        {[34, 50, 68, 86].map((height, index) => (
-          <span
-            key={height}
-            className="w-9 rounded-t-md border border-primary/25 bg-gradient-to-t from-primary/35 to-primary shadow-[0_0_28px_rgba(139,92,246,0.22)]"
-            style={{ height, transform: `translateY(${index % 2 ? 0 : 12}px)` }}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function buildDashboardMetrics(overview: DashboardOverview, currentStreak: number) {
+function buildDashboardMetrics(overview: DashboardOverview) {
   const total = getTotalContributions(overview.dailyContributions);
   const githubTotal = overview.dailyContributions.reduce((sum, day) => sum + day.platforms.github, 0);
   const gitlabTotal = overview.dailyContributions.reduce((sum, day) => sum + day.platforms.gitlab, 0);
@@ -386,14 +377,6 @@ function buildDashboardMetrics(overview: DashboardOverview, currentStreak: numbe
       trend: "Last year window",
       icon: FiGitPullRequest,
       visual: "bars" as const,
-    },
-    {
-      label: "Current streak",
-      value: `${currentStreak.toLocaleString("en-US")} ${currentStreak === 1 ? "day" : "days"}`,
-      helper: currentStreak > 0 ? "Nice momentum." : "No current streak yet.",
-      trend: `${overview.activeDays.toLocaleString("en-US")} active days`,
-      icon: FaFire,
-      visual: "progress" as const,
     },
   ];
 }

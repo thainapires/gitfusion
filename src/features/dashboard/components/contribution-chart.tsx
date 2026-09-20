@@ -1,6 +1,6 @@
 "use client";
 
-import { SVGAttributes } from "react";
+import { SVGAttributes, useEffect, useRef } from "react";
 import CalendarHeatmap, { ReactCalendarHeatmapValue } from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import { Tooltip } from "react-tooltip";
@@ -9,6 +9,8 @@ import { DailyContribution } from "@/types/mock-app";
 type CalendarContribution = ReactCalendarHeatmapValue<Date> & Omit<DailyContribution, "date">;
 
 export function ContributionChart({ data }: { data: DailyContribution[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const values: CalendarContribution[] = data.map((contribution) => ({
     ...contribution,
     date: parseLocalDate(contribution.date),
@@ -17,6 +19,14 @@ export function ContributionChart({ data }: { data: DailyContribution[] }) {
 
   const startDate = values[0]?.date ?? new Date();
   const endDate = values[values.length - 1]?.date ?? new Date();
+
+  useEffect(() => {
+    const node = scrollRef.current;
+
+    if (node) {
+      node.scrollLeft = node.scrollWidth;
+    }
+  }, [data]);
 
   const tooltipDataAttrs = (value?: ReactCalendarHeatmapValue<Date>): SVGAttributes<SVGElement> => {
     const contribution = value as CalendarContribution | undefined;
@@ -44,8 +54,8 @@ export function ContributionChart({ data }: { data: DailyContribution[] }) {
         </div>
       </div>
 
-      <div className="gf-contribution-calendar mt-6 max-w-full overflow-x-auto pb-1">
-        <div className="min-w-[48rem] xl:min-w-[58rem] 2xl:min-w-0">
+      <div ref={scrollRef} className="gf-contribution-calendar mt-6 max-w-full overflow-x-auto pb-1">
+        <div className="min-w-[720px] xl:min-w-[58rem] 2xl:min-w-0">
           <CalendarHeatmap
             startDate={startDate}
             endDate={endDate}

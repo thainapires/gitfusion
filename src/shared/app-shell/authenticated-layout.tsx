@@ -115,7 +115,7 @@ export function AuthenticatedLayout({
       )}
 
       <main className="min-w-0 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-[1560px] min-w-0">
+        <div className="mx-auto w-full max-w-[1760px] min-w-0">
           {children}
         </div>
       </main>
@@ -138,7 +138,7 @@ function AuthenticatedHeader({
 }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/88 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-[1760px] items-center gap-4 px-4 sm:px-6 lg:px-8">
         <button
           type="button"
           onClick={onOpenMobileMenu}
@@ -160,14 +160,14 @@ function AuthenticatedHeader({
         </nav>
 
         <div className="ml-auto hidden min-w-0 items-center gap-3 xl:flex">
-          <SearchControl />
+          {/* <SearchControl /> */}
           <button
             type="button"
             className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-border bg-card/70 px-3 text-sm font-bold text-foreground"
             title="Dashboard data uses the current yearly activity window"
           >
             <span>Last year</span>
-            <FiChevronDown className="size-4 text-muted-foreground" aria-hidden />
+            {/* <FiChevronDown className="size-4 text-muted-foreground" aria-hidden /> */}
           </button>
         </div>
 
@@ -176,13 +176,13 @@ function AuthenticatedHeader({
             <SyncStatusPanel sync={syncStatus ?? null} providers={syncProviders ?? []} actions={syncActions} />
           </div>
           <div className="hidden xl:flex">{actions}</div>
-          <IconButton label="Dark theme is active">
+          {/* <IconButton label="Dark theme is active">
             <FiMoon className="size-4" aria-hidden />
           </IconButton>
           <IconButton label="Notifications">
             <FiBell className="size-4" aria-hidden />
             <span className="absolute right-2 top-2 size-1.5 rounded-full bg-rose-400" />
-          </IconButton>
+          </IconButton> */}
           <UserMenu />
         </div>
       </div>
@@ -333,7 +333,7 @@ function UserMenu() {
             type="button"
             role="menuitem"
             onClick={handleSignOut}
-            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground cursor-pointer"
           >
             <FiLogOut className="size-4" aria-hidden />
             Sign out

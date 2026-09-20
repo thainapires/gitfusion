@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const result = await getDashboardOverview({
       accessToken,
       forceRefresh,
+      requestOrigin: request.nextUrl.origin,
     });
 
     return NextResponse.json(result);

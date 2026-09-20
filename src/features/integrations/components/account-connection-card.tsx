@@ -23,7 +23,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
           <span className={`grid size-10 shrink-0 place-items-center rounded-lg ${account.provider === "github" ? "bg-slate-950 text-white" : "bg-orange-500/15 text-orange-400"}`}>
             <Icon className="size-5" aria-hidden />
           </span>
-          <div className="min-w-0">
+          <div className={`min-w-0`}>
             <h2 className="truncate text-sm font-extrabold">{account.name}</h2>
             <p className="mt-1 truncate text-xs font-semibold text-muted-foreground">
               {isConnected ? `@${account.username}` : "Connect your account"}
@@ -34,17 +34,17 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
         <div className="flex shrink-0 items-center gap-2">
           {isConnected ? (
             <>
-              <span className="hidden rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-extrabold text-emerald-400 sm:inline-flex">Connected</span>
+              <span className={`rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-extrabold text-emerald-400`}>Connected</span>
               <button
                 type="button"
                 onClick={() => onDisconnect?.(account.provider)}
-                className="grid size-8 place-items-center rounded-full text-muted-foreground transition hover:bg-rose-500/10 hover:text-rose-300"
+                className={`grid size-8 place-items-center rounded-full text-muted-foreground transition hover:bg-rose-500/10 hover:text-rose-300`}
                 aria-label={`Disconnect ${account.name}`}
                 title={`Disconnect ${account.name}`}
               >
                 <FiLogOut className="size-4" aria-hidden />
               </button>
-              <FiChevronRight className="size-4 text-muted-foreground" aria-hidden />
+              <FiChevronRight className={`size-4 text-muted-foreground ${compact ? "hidden sm:block" : ""}`} aria-hidden />
             </>
           ) : (
             <button
@@ -54,7 +54,7 @@ export function AccountConnectionCard({ account, onConnect, onDisconnect, compac
               className="inline-flex h-8 items-center gap-2 rounded-full bg-emerald-500/15 px-3 text-xs font-extrabold text-emerald-300 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FiLink2 className="size-3.5" aria-hidden />
-              {isConnecting ? "Connecting" : "Connect"}
+              <span>{isConnecting ? "Connecting" : "Connect"}</span>
             </button>
           )}
         </div>

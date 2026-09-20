@@ -7,6 +7,15 @@ export type ProviderProfile = {
   avatarUrl: string | null;
 };
 
+export type ProviderTokenData = {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  refresh_token_expires_in?: number;
+  scope?: string;
+  token_type?: string;
+};
+
 export function isIntegrationProvider(provider: string): provider is IntegrationProvider {
   return provider === "github" || provider === "gitlab";
 }
@@ -72,12 +81,7 @@ export async function exchangeCodeForToken({ provider, code, redirectUri }: { pr
     body,
   });
 
-  const tokenData = await response.json() as {
-    access_token?: string;
-    refresh_token?: string;
-    expires_in?: number;
-    scope?: string;
-    token_type?: string;
+  const tokenData = await response.json() as Partial<ProviderTokenData> & {
     error?: string;
     error_description?: string;
   };
@@ -86,7 +90,76 @@ export async function exchangeCodeForToken({ provider, code, redirectUri }: { pr
     throw new Error(tokenData.error_description || tokenData.error || `Unable to connect ${provider}.`);
   }
 
-  return tokenData;
+  return tokenData as ProviderTokenData;
+}
+
+export async function refreshProviderToken({
+  provider,
+  refreshToken,
+  redirectUri,
+}: {
+  provider: IntegrationProvider;
+  refreshToken: string;
+  redirectUri?: string | null;
+}): Promise<ProviderTokenData> {
+  const config = getProviderConfig(provider);
+
+  if (!config.clientId || !config.clientSecret) {
+    throw new Error(`${provider} OAuth credentials are not configured.`);
+  }
+
+  const body = new URLSearchParams({
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+  });
+
+  if (redirectUri) {
+    body.set("redirect_uri", redirectUri);
+  }
+
+  const response = await fetch(config.tokenUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+
+  const tokenData = await response.json().catch(() => ({})) as Partial<ProviderTokenData> & {
+    error?: string;
+    error_description?: string;
+    message?: string;
+  };
+
+  if (!response.ok || !tokenData.access_token) {
+    const message = tokenData.error_description || tokenData.error || tokenData.message;
+    const requiresReconnect =
+      tokenData.error === "bad_refresh_token" ||
+      tokenData.error === "invalid_grant";
+    throw new ProviderTokenRefreshError(
+      provider,
+      message || `Unable to refresh ${provider} access token.`,
+      response.status,
+      requiresReconnect,
+    );
+  }
+
+  return tokenData as ProviderTokenData;
+}
+
+export class ProviderTokenRefreshError extends Error {
+  constructor(
+    public readonly provider: IntegrationProvider,
+    message: string,
+    public readonly status: number,
+    public readonly requiresReconnect: boolean,
+  ) {
+    super(message);
+    this.name = "ProviderTokenRefreshError";
+  }
 }
 
 export async function fetchProviderProfile(provider: IntegrationProvider, accessToken: string): Promise<ProviderProfile> {

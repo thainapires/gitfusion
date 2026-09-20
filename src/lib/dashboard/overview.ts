@@ -35,6 +35,17 @@ export type StoredDailyTotal = {
   gitlab_count: number;
 };
 
+export class ProviderApiError extends Error {
+  constructor(
+    public readonly provider: AccountProvider,
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ProviderApiError";
+  }
+}
+
 const dashboardDays = 365;
 const gitlabApiBaseUrl = "https://gitlab.com/api/v4";
 
@@ -172,9 +183,15 @@ async function fetchGitHubDashboardData(account: ConnectedAccountRow, since: str
   });
   const graphJson = await readJsonResponse<GitHubDashboardGraphResponse>(graphResponse);
 
+  if (graphResponse.status === 401) {
+    throw new ProviderApiError(
+      "github",
+      401,
+      getGitHubDashboardErrorMessage(graphResponse, graphJson),
+    );
+  }
+
   if (!graphResponse.ok || graphJson.errors?.length) {
-    console.log(graphResponse);
-    console.log(graphJson);
     throw new Error(getGitHubDashboardErrorMessage(graphResponse, graphJson));
   }
 
@@ -205,6 +222,8 @@ async function fetchGitHubRepos(account: ConnectedAccountRow): Promise<Repositor
     },
   });
 
+  throwIfUnauthorized(response, "github");
+
   if (!response.ok) {
     return [];
   }
@@ -227,6 +246,8 @@ async function fetchGitHubEvents(account: ConnectedAccountRow) {
       Accept: "application/vnd.github+json",
     },
   });
+
+  throwIfUnauthorized(response, "github");
 
   if (!response.ok) {
     return { activities: [], pullRequests: 0 };
@@ -319,6 +340,8 @@ async function fetchGitLabCalendarContributions(account: ConnectedAccountRow, si
     headers: { Authorization: `Bearer ${account.access_token}` },
   });
 
+  throwIfUnauthorized(response, "gitlab");
+
   if (!response.ok) {
     return new Map<string, number>();
   }
@@ -386,6 +409,8 @@ async function fetchAllGitLabPages<T>(path: string, accessToken: string) {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
+    throwIfUnauthorized(response, "gitlab");
+
     if (!response.ok) {
       break;
     }
@@ -396,6 +421,19 @@ async function fetchAllGitLabPages<T>(path: string, accessToken: string) {
   }
 
   return items;
+}
+
+function throwIfUnauthorized(
+  response: Response,
+  provider: AccountProvider,
+): void {
+  if (response.status === 401) {
+    throw new ProviderApiError(
+      provider,
+      401,
+      `${provider} credentials are invalid or expired.`,
+    );
+  }
 }
 
 function withGitLabPage(path: string, page: string) {

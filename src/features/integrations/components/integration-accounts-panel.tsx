@@ -21,6 +21,7 @@ type IntegrationAccountsPanelProps = {
   compact?: boolean;
   showContinue?: boolean;
   redirectTo?: string;
+  className?: string;
 };
 
 const providerAccounts: ConnectedAccount[] = [
@@ -46,7 +47,7 @@ const providerAccounts: ConnectedAccount[] = [
   },
 ];
 
-export function IntegrationAccountsPanel({ compact = false, showContinue = false, redirectTo = "/connect-accounts" }: IntegrationAccountsPanelProps) {
+export function IntegrationAccountsPanel({ compact = false, showContinue = false, redirectTo = "/connect-accounts", className = "" }: IntegrationAccountsPanelProps) {
   const [accounts, setAccounts] = useState<ConnectedAccount[]>(() => buildAccounts([]));
 
   const loadAccounts = useCallback(async () => {
@@ -170,7 +171,7 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
   const connectedCount = accounts.filter((account) => account.status === "connected").length;
 
   return (
-    <div className="min-w-0 space-y-4">
+    <div className={`min-w-0 space-y-4 ${className}`}>
       <div className="space-y-3 rounded-lg border border-border bg-card/85 p-4 shadow-sm">
         <div className="flex min-w-0 items-center justify-between gap-3">
           <h2 className="min-w-0 text-base font-extrabold">Connected accounts</h2>
@@ -178,9 +179,11 @@ export function IntegrationAccountsPanel({ compact = false, showContinue = false
             {connectedCount}/{accounts.length} connected
           </h3>
         </div>
-        {accounts.map((account) => (
-          <AccountConnectionCard key={account.provider} account={account} onConnect={connectAccount} onDisconnect={disconnectAccount} compact={compact} />
-        ))}
+        <div className={compact ? "grid grid-cols-1 sm:grid-cols-2 gap-3 xl:grid-cols-1" : "space-y-3"}>
+          {accounts.map((account) => (
+            <AccountConnectionCard key={account.provider} account={account} onConnect={connectAccount} onDisconnect={disconnectAccount} compact={compact} />
+          ))}
+        </div>
       </div>
 
       {showContinue && (

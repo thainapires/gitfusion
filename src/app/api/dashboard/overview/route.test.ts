@@ -92,6 +92,7 @@ describe("/api/dashboard/overview", () => {
     expect(getDashboardOverviewMock).toHaveBeenCalledWith({
       accessToken: "supabase-token",
       forceRefresh: false,
+      requestOrigin: "https://gitfusion.test",
     });
   });
 
@@ -128,6 +129,7 @@ describe("/api/dashboard/overview", () => {
     expect(getDashboardOverviewMock).toHaveBeenCalledWith({
       accessToken: "supabase-token",
       forceRefresh: true,
+      requestOrigin: "https://gitfusion.test",
     });
   });
 
